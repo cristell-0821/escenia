@@ -1,50 +1,62 @@
 'use client'
 
-import { Skeleton } from '../ui/skeleton'
-import AgrupacionCard from './AgrupacionCard'
-import type { Tables } from '@/types/database.types'
+import Image from 'next/image'
+import Link from 'next/link'
 
-interface GroupsGridProps {
-  groups: Tables<'groups'>[]
-  isLoading: boolean
+interface Group {
+  id: string
+  name: string
+  city: string | null
+  region: string | null
+  cover_url: string | null
+  slug: string
 }
 
-export default function GroupsGrid({ groups, isLoading }: GroupsGridProps) {
-  if (isLoading) {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-20">
-        {[...Array(6)].map((_, i) => (
-          <div key={i} className="flex flex-col">
-            <Skeleton className="aspect-[4/5] mb-6 bg-[#EEE7DB]" />
-            <Skeleton className="h-8 mb-4 w-3/4 bg-[#EEE7DB]" />
-            <Skeleton className="h-12 mb-6 w-full bg-[#EEE7DB]" />
-            <Skeleton className="h-4 w-1/2 bg-[#EEE7DB]" />
-          </div>
-        ))}
-      </div>
-    )
-  }
+interface Props {
+  groups: Group[]
+}
 
+export default function GroupsGrid({ groups }: Props) {
   if (groups.length === 0) {
     return (
-      <div className="py-20 text-center max-w-2xl mx-auto">
-        <h4
-          className="text-3xl text-[#1E1B14] mb-4"
-          style={{ fontFamily: 'var(--font-newsreader)' }}
-        >
-          No encontramos agrupaciones
-        </h4>
-        <p className="text-[#554240] text-lg">
-          Intenta ajustar tus filtros de búsqueda o región.
-        </p>
+      <div className="text-center py-20">
+        <p className="text-[#554240] text-xl">No se encontraron agrupaciones</p>
       </div>
     )
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-20">
-      {groups.map((group) => (
-        <AgrupacionCard key={group.id} group={group} />
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {groups.map((group, index) => (
+        <Link
+          key={group.id}
+          href={`/agrupaciones/${group.slug}`}
+          className="group block"
+        >
+          <div className="relative aspect-[4/5] overflow-hidden bg-[#EEE7DB] mb-4">
+            {group.cover_url ? (
+              <Image
+                src={group.cover_url}
+                alt={group.name}
+                fill
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                loading={index < 3 ? 'eager' : 'lazy'} // ✅ Primera carga optimizada
+                priority={index < 3} // ✅ Solo las primeras 3 son prioritarias
+              />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center text-[#554240]/50">
+                <span>Sin imagen</span>
+              </div>
+            )}
+          </div>
+          <h3 className="text-xl font-bold text-[#1E1B14] group-hover:text-[#85332A] transition-colors">
+            {group.name}
+          </h3>
+          <p className="text-[#554240] text-sm">
+            {group.city}{group.region && `, ${group.region}`}
+          </p>
+        </Link>
       ))}
     </div>
   )

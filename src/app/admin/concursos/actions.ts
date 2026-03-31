@@ -26,20 +26,34 @@ async function checkPermissions(supabase: any) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'No autorizado', user: null, profile: null }
 
+  // 🔹 perfil (solo rol)
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role, group_id')
+    .select('role')
     .eq('id', user.id)
     .single()
 
+  // 🔹 membership (grupo real)
+  const { data: membership } = await supabase
+    .from('group_members')
+    .select('group_id, role')
+    .eq('user_id', user.id)
+    .maybeSingle()
+
   const isSuperAdmin = profile?.role === 'superadmin'
-  const isGroupAdmin = profile?.role === 'group_admin' && profile?.group_id
+  const isGroupAdmin = membership?.role === 'group_admin' && membership?.group_id
 
   if (!isSuperAdmin && !isGroupAdmin) {
     return { error: 'No tienes permisos', user: null, profile: null }
   }
 
-  return { user, profile, isSuperAdmin, isGroupAdmin }
+  return { 
+    user, 
+    profile, 
+    membership,
+    isSuperAdmin, 
+    isGroupAdmin 
+  }
 }
 
 async function uploadImage(file: File, supabase: any): Promise<string | null> {

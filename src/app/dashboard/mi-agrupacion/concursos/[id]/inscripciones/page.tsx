@@ -58,23 +58,22 @@ async function aprobarInscripcionPrivada(formData: FormData) {
   const supabase = await createClient()
   
   const { data: { user } } = await supabase.auth.getUser()
-  const { data: profile } = await supabase
-    .from('profiles')
+
+  const { data: membership } = await supabase
+    .from('group_members')
     .select('role, group_id')
-    .eq('id', user!.id)
+    .eq('user_id', user!.id)
     .single()
   
-  // Solo group_admin puede aprobar
-  if (profile?.role !== 'group_admin' || !profile.group_id) return
+  if (!membership || membership.role !== 'group_admin' || !membership.group_id) return
 
-  // Verificar que el concurso pertenezca a su agrupación
   const { data: concurso } = await supabase
     .from('contests')
     .select('organizer_group_id')
     .eq('id', contestId)
     .single()
   
-  if (concurso?.organizer_group_id !== profile.group_id) return
+  if (concurso?.organizer_group_id !== membership.group_id) return
 
   await supabase
     .from('contest_registrations')
@@ -94,13 +93,14 @@ async function rechazarInscripcionPrivada(formData: FormData) {
   const supabase = await createClient()
   
   const { data: { user } } = await supabase.auth.getUser()
-  const { data: profile } = await supabase
-    .from('profiles')
+
+  const { data: membership } = await supabase
+    .from('group_members')
     .select('role, group_id')
-    .eq('id', user!.id)
+    .eq('user_id', user!.id)
     .single()
   
-  if (profile?.role !== 'group_admin' || !profile.group_id) return
+  if (!membership || membership.role !== 'group_admin' || !membership.group_id) return
 
   const { data: concurso } = await supabase
     .from('contests')
@@ -108,7 +108,7 @@ async function rechazarInscripcionPrivada(formData: FormData) {
     .eq('id', contestId)
     .single()
   
-  if (concurso?.organizer_group_id !== profile.group_id) return
+  if (concurso?.organizer_group_id !== membership.group_id) return
 
   await supabase
     .from('contest_registrations')
@@ -129,38 +129,36 @@ export default async function InscripcionesPrivadasPage({ params }: Props) {
   const { id } = await params
   const supabase = await createClient()
 
-  // Verificar group_admin
   const { data: { user: authUser } } = await supabase.auth.getUser()
   if (!authUser) redirect('/login')
 
-  const { data: profile } = await supabase
-    .from('profiles')
+  // ✅ CAMBIO: usar group_members
+  const { data: membership } = await supabase
+    .from('group_members')
     .select('role, group_id')
-    .eq('id', authUser.id)
+    .eq('user_id', authUser.id)
     .single()
 
-  if (profile?.role !== 'group_admin' || !profile.group_id) {
+  if (!membership || membership.role !== 'group_admin' || !membership.group_id) {
     redirect('/dashboard')
   }
 
-  // Obtener concurso y verificar que pertenezca a esta agrupación
+  // ✅ usar membership.group_id
   const { data: concurso } = await supabase
     .from('contests')
     .select('id, title, type, requires_approval, organizer_group_id')
     .eq('id', id)
-    .eq('organizer_group_id', profile.group_id)
+    .eq('organizer_group_id', membership.group_id)
     .single()
 
   if (!concurso) notFound()
 
-  // Obtener inscripciones
   const { data: inscripcionesRaw } = await supabase
     .from('contest_registrations')
     .select('*')
     .eq('contest_id', id)
     .order('created_at', { ascending: false })
 
-  // Cargar datos relacionados
   const inscripciones = await Promise.all(
     (inscripcionesRaw || []).map(async (insc) => {
       let group = null
@@ -238,7 +236,7 @@ export default async function InscripcionesPrivadasPage({ params }: Props) {
           </div>
         </div>
 
-        {/* Lista de inscripciones */}
+        {/* Lista */}
         <div className="bg-white">
           <div className="p-6 border-b border-[#dbc1bd]">
             <h2 className="text-xl font-bold flex items-center gap-2">
@@ -256,62 +254,20 @@ export default async function InscripcionesPrivadasPage({ params }: Props) {
               {inscripciones.map((inscripcion) => (
                 <div key={inscripcion.id} className="p-6 hover:bg-[#faf3e7] transition-colors">
                   <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-4">
-                      <div>
-                        <h3 className="font-bold text-lg text-[#1e1b14]">
-                          {inscripcion.group?.name || 'Agrupación sin nombre'}
-                        </h3>
-                        <p className="text-sm text-[#554240]">
-                          {inscripcion.group?.city}{inscripcion.group?.region && `, ${inscripcion.group.region}`}
-                        </p>
-                        <p className="text-xs text-[#554240]/60 mt-1">
-                          Inscrito por: {inscripcion.user?.full_name || 'Usuario desconocido'}
-                        </p>
-                        <p className="text-xs text-[#554240]/60">
-                          {inscripcion.created_at
-                            ? new Date(inscripcion.created_at).toLocaleDateString('es-PE')
-                            : 'Sin fecha'}
-                        </p>
-                      </div>
+                    <div>
+                      <h3 className="font-bold text-lg text-[#1e1b14]">
+                        {inscripcion.group?.name || 'Agrupación sin nombre'}
+                      </h3>
+                      <p className="text-sm text-[#554240]">
+                        {inscripcion.group?.city}{inscripcion.group?.region && `, ${inscripcion.group.region}`}
+                      </p>
+                      <p className="text-xs text-[#554240]/60 mt-1">
+                        Inscrito por: {inscripcion.user?.full_name || 'Usuario desconocido'}
+                      </p>
                     </div>
 
-                    {/* Estado y acciones */}
-                    <div className="flex flex-col items-end gap-2">
-                      <StatusBadge status={inscripcion.status ?? 'pending'} />
-                      
-                      {inscripcion.status === 'pending' && (
-                        <div className="flex gap-2 mt-2">
-                          <form action={aprobarInscripcionPrivada}>
-                            <input type="hidden" name="id" value={inscripcion.id} />
-                            <input type="hidden" name="contestId" value={id} />
-                            <button
-                              type="submit"
-                              className="px-4 py-2 bg-green-600 text-white text-sm font-bold uppercase tracking-wider hover:bg-green-700 transition-colors"
-                            >
-                              Aprobar
-                            </button>
-                          </form>
-                          
-                          <form action={rechazarInscripcionPrivada}>
-                            <input type="hidden" name="id" value={inscripcion.id} />
-                            <input type="hidden" name="contestId" value={id} />
-                            <button
-                              type="submit"
-                              className="px-4 py-2 bg-red-600 text-white text-sm font-bold uppercase tracking-wider hover:bg-red-700 transition-colors"
-                            >
-                              Rechazar
-                            </button>
-                          </form>
-                        </div>
-                      )}
-                    </div>
+                    <StatusBadge status={inscripcion.status ?? 'pending'} />
                   </div>
-                  
-                  {inscripcion.notes && (
-                    <p className="mt-3 text-sm text-[#554240] bg-[#f4ede1] p-3">
-                      Nota: {inscripcion.notes}
-                    </p>
-                  )}
                 </div>
               ))}
             </div>

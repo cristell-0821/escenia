@@ -10,7 +10,9 @@ export default async function ConcursoDetallePage({ params }: Props) {
   const { slug } = await params
   const supabase = await createClient()
 
-  // Buscar concurso
+  // =========================
+  // 1. Obtener concurso
+  // =========================
   const { data: concurso } = await supabase
     .from('contests')
     .select('*')
@@ -22,75 +24,78 @@ export default async function ConcursoDetallePage({ params }: Props) {
     notFound()
   }
 
-  // Obtener usuario actual si existe
+  // =========================
+  // 2. Usuario autenticado
+  // =========================
   const { data: { user: authUser } } = await supabase.auth.getUser()
   
   let user = null
   let initialRegistration = null
 
   if (authUser) {
-    // Obtener perfil
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .select('role, group_id')
-      .eq('id', authUser.id)
+    // =========================
+    // 3. Obtener membership (FUENTE REAL)
+    // =========================
+    const { data: membership } = await supabase
+      .from('group_members')
+      .select('group_id, role')
+      .eq('user_id', authUser.id)
       .maybeSingle()
 
-    if (profile) {
-      // ========== CASO 1: Profile existe en BD ==========
-      
-      // Obtener nombre de la agrupación
-      let groupName = null
-      if (profile.group_id) {
-        const { data: group } = await supabase
-          .from('groups')
-          .select('name')
-          .eq('id', profile.group_id)
-          .maybeSingle()
-        groupName = group?.name
-      }
+    // =========================
+    // 4. Si tiene agrupación
+    // =========================
+    if (membership && membership.group_id) {
 
-      // Construir user object
+      // Obtener nombre del grupo
+      const { data: group } = await supabase
+        .from('groups')
+        .select('name')
+        .eq('id', membership.group_id)
+        .maybeSingle()
+
       user = {
         id: authUser.id,
-        role: profile.role,
-        groupId: profile.group_id,
-        groupName: groupName
+        role: membership.role,
+        groupId: membership.group_id,
+        groupName: group?.name || undefined
       }
 
-      // Verificar inscripción existente (SOLO si tiene group_id)
-      if (profile.group_id) {
-        const { data: registration } = await supabase
-          .from('contest_registrations')
-          .select('id, status, created_at, notes')
-          .eq('contest_id', concurso.id)
-          .eq('group_id', profile.group_id)
-          .maybeSingle()
-        
-        initialRegistration = registration
-          ? {
-              id: registration.id,
-              status: (registration.status ?? 'pending') as 'pending' | 'approved' | 'rejected',
-              createdAt: registration.created_at ?? '',
-              notes: registration.notes ?? undefined,
-            }
-          : null
-      }
+      // =========================
+      // 5. Verificar inscripción
+      // =========================
+      const { data: registration } = await supabase
+        .from('contest_registrations')
+        .select('id, status, created_at, notes')
+        .eq('contest_id', concurso.id)
+        .eq('group_id', membership.group_id)
+        .maybeSingle()
+
+      initialRegistration = registration
+        ? {
+            id: registration.id,
+            status: (registration.status ?? 'pending') as 'pending' | 'approved' | 'rejected',
+            createdAt: registration.created_at ?? '',
+            notes: registration.notes ?? undefined,
+          }
+        : null
 
     } else {
-      // ========== CASO 2: Profile NO existe ==========
-      
-      const metadata = authUser.user_metadata || {}
-      
+      // =========================
+      // 6. Usuario SIN agrupación
+      // =========================
       user = {
         id: authUser.id,
-        role: metadata.role || 'user',
-        groupId: metadata.group_id,
-        groupName: metadata.group_name || 'Mi Agrupación'
+        role: 'visitor',
+        groupId: undefined,
+        groupName: undefined
       }
     }
   }
 
+  // =========================
+  // 7. Render
+  // =========================
   return (
     <ConcursoDetalleClient 
       concurso={concurso} 

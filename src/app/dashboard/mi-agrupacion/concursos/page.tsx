@@ -10,14 +10,14 @@ export default async function MisConcursosPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role, group_id')
-    .eq('id', user.id)
+  const { data: membership } = await supabase
+    .from('group_members')
+    .select('group_id, role')
+    .eq('user_id', user.id)
     .single()
 
-  if (profile?.role !== 'group_admin' || !profile.group_id) {
-    redirect('/dashboard')
+  if (!membership || membership.role !== 'group_admin' || !membership.group_id) {
+    redirect('/dashboard') 
   }
 
   // Obtener concursos creados por esta agrupación
@@ -33,7 +33,7 @@ export default async function MisConcursosPage() {
       requires_approval,
       _count:contest_registrations(count)
     `)
-    .eq('organizer_group_id', profile.group_id)
+    .eq('organizer_group_id', membership.group_id)
     .eq('type', 'private')
     .order('created_at', { ascending: false })
 

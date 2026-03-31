@@ -1,5 +1,3 @@
-// src/app/dashboard/mi-agrupacion/concursos/[id]/editar/page.tsx
-
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import { updateContestAction } from '@/app/admin/concursos/actions'
@@ -19,14 +17,15 @@ export default async function EditarConcursoPage({ params }: Props) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role, group_id')
-    .eq('id', user.id)
-    .single()
+  // 🔹 Obtener membership (NUEVO)
+  const { data: membership } = await supabase
+    .from('group_members')
+    .select('group_id, role')
+    .eq('user_id', user.id)
+    .maybeSingle()
 
   // Solo group_admin puede acceder
-  if (profile?.role !== 'group_admin' || !profile.group_id) {
+  if (!membership || membership.role !== 'group_admin' || !membership.group_id) {
     redirect('/dashboard')
   }
 
@@ -35,18 +34,17 @@ export default async function EditarConcursoPage({ params }: Props) {
     .from('contests')
     .select('*')
     .eq('id', id)
-    .eq('organizer_group_id', profile.group_id) // ✅ Solo si es suyo
-    .eq('type', 'private') // ✅ Solo privados
+    .eq('organizer_group_id', membership.group_id) // ✅ CORREGIDO
+    .eq('type', 'private')
     .single()
 
   if (!concurso) notFound()
 
-  // ✅ Solo permitir editar si está en draft
+  // Solo permitir editar si está en draft
   if (concurso.status !== 'draft') {
     redirect('/dashboard/mi-agrupacion/concursos')
   }
 
-  // Wrapper para pasar el ID
   async function handleUpdate(formData: FormData) {
     'use server'
     return updateContestAction(id, formData)

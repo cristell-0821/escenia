@@ -48,17 +48,27 @@ export default function RegistrationBanner({ userId }: RegistrationBannerProps) 
     try {
       const profile = await getUserProfile(userId)
 
+      // 🔹 SUPERADMIN
       if (profile.role === 'superadmin') {
         setState({ type: 'superadmin' })
         return
       }
 
+      // 🔹 GROUP ADMIN
       if (profile.role === 'group_admin') {
         const membership = await getMyGroup(userId)
+
+        // ✅ VALIDACIÓN CLAVE (esto te faltaba)
+        if (!membership || !membership.groups) {
+          setState({ type: 'error', message: 'No se encontró la agrupación' })
+          return
+        }
+
         setState({ type: 'group_admin', group: membership.groups })
         return
       }
 
+      // 🔹 VISITOR
       const requests = await getMyGroupRequests(userId)
       const latestRequest = requests[0]
 

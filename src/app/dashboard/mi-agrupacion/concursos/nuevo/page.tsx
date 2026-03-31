@@ -1,5 +1,3 @@
-// src/app/dashboard/mi-agrupacion/concursos/nuevo/page.tsx
-
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
@@ -13,13 +11,15 @@ export default async function NuevoConcursoPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase
-    .from('profiles')
+  // ✅ CAMBIO: usar group_members
+  const { data: membership } = await supabase
+    .from('group_members')
     .select('role, group_id')
-    .eq('id', user.id)
+    .eq('user_id', user.id)
     .single()
 
-  if (profile?.role !== 'group_admin' || !profile.group_id) {
+  // ✅ Validación correcta
+  if (!membership || membership.role !== 'group_admin' || !membership.group_id) {
     redirect('/dashboard')
   }
 

@@ -16,21 +16,21 @@ export default async function DashboardLayout({
   }
 
   // Verificar que sea group_admin
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role, group_id')
-    .eq('id', user.id)
+  const { data: membership } = await supabase
+    .from('group_members')
+    .select('group_id, role')
+    .eq('user_id', user.id)
     .single()
 
-  if (profile?.role !== 'group_admin') {
-    redirect('/perfil')
+  if (!membership || membership.role !== 'group_admin' || !membership.group_id) {
+    redirect('/perfil') 
   }
 
   // Obtener info del grupo
   const { data: group } = await supabase
     .from('groups')
     .select('id, name, slug')
-    .eq('id', profile.group_id!)
+    .eq('id', membership.group_id)
     .single()
 
   return (
