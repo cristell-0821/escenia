@@ -1,0 +1,125 @@
+'use client'
+
+import Link from 'next/link'
+import { usePathname, useRouter } from 'next/navigation'
+import { Menu, User, LayoutDashboard, Home } from 'lucide-react'
+import { useUser } from '@/hooks/useUser'
+
+const links = [
+  { label: 'Inicio', href: '/' },
+  { label: 'Concursos', href: '/concursos' },
+  { label: 'Agrupaciones', href: '/agrupaciones' },
+]
+
+export default function Navbar() {
+  const pathname = usePathname()
+  const router = useRouter()
+  const { user, role, loading } = useUser()
+
+  const handleUserClick = () => {
+    if (user) {
+      router.push('/perfil')
+    } else {
+      router.push('/login')
+    }
+  }
+
+  // Determinar link del panel según rol
+  const getPanelLink = () => {
+    if (role === 'superadmin') return '/admin'
+    if (role === 'group_admin') return '/dashboard/mi-agrupacion'
+    return null
+  }
+
+  const panelLink = getPanelLink()
+
+  return (
+    <header className="w-full bg-[#85332A] text-[#F2E9DC] z-50">
+      <div className="flex items-center justify-between h-[64px] px-8">
+
+        {/* LEFT */}
+        <div className="flex items-center gap-[17px]">
+          <button className="opacity-80 p-2 hover:opacity-100 transition">
+            <Menu size={18} color="#F2E9DC" />
+          </button>
+
+          <span className="text-[#F2E9DC] font-black text-[36px] tracking-[3.6px] uppercase" 
+            style={{ fontFamily: 'var(--font-newsreader)' }} > 
+            Escenia 
+          </span>
+        </div>
+
+        {/* NAV */}
+        <nav className="flex items-center gap-10">
+          {links.map((link) => {
+            const isActive = pathname === link.href
+
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`flex flex-col ${
+                  isActive ? 'border-b-2 border-white' : ''
+                }`}
+              >
+                <span
+                  className="text-[18px]"
+                  style={{
+                    fontFamily: 'var(--font-newsreader)',
+                    color: isActive ? '#FFFFFF' : '#F2E9DC',
+                    fontWeight: isActive ? 700 : 400,
+                  }}
+                >
+                  {link.label}
+                </span>
+              </Link>
+            )
+          })}
+
+          {/* PANEL */}
+          {!loading && panelLink && (
+            <Link
+              href={panelLink}
+              className={`flex items-center gap-2 ${
+                pathname.startsWith('/admin') || pathname.startsWith('/dashboard') 
+                  ? 'border-b-2 border-[#85332A]' 
+                  : ''
+              }`}
+            >
+              <LayoutDashboard size={16} color="#F2E9DC" />
+              <span
+                className="text-[18px]"
+                style={{
+                  fontFamily: 'var(--font-newsreader)',
+                  color: (pathname.startsWith('/admin') || pathname.startsWith('/dashboard')) 
+                    ? '#F2E9DC' 
+                    : '#F2E9DC',
+                  fontWeight: (pathname.startsWith('/admin') || pathname.startsWith('/dashboard')) 
+                    ? 700 
+                    : 500,
+                }}
+              >
+                {role === 'superadmin' ? 'Admin' : 'Panel'}
+              </span>
+            </Link>
+          )}
+        </nav>
+
+        {/* USER */}
+        <button
+          onClick={handleUserClick}
+          className="flex items-center justify-center opacity-80 hover:opacity-100 transition p-2"
+        >
+          {user ? (
+            <Home size={20} color="#F2E9DC" />
+          ) : (
+            <User size={20} color="#F2E9DC" />
+          )}
+        </button>
+
+      </div>
+
+      <div className="w-full h-px bg-[#F2E9DC] opacity-15" />
+    </header>
+  )
+}
