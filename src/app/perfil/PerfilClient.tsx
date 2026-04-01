@@ -1,16 +1,17 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { useUser } from '@/hooks/useUser'
 import RegistrationBanner from './RegistrationBanner'
 import { CircleCheckBig, Eye, Loader2 } from "lucide-react"
 
 export default function PerfilClient() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const successMessage = searchParams.get('success')
   
-  const { user, loading: userLoading } = useUser()
+  const { user, profile, isAuthReady, isProfileLoading } = useUser()
   
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -22,7 +23,18 @@ export default function PerfilClient() {
     }
   }, [user])
 
-  if (userLoading && user === null) {
+   // 1. Esperar a que auth esté listo
+   if (!isAuthReady) {
+    return (
+      <div className="min-h-[calc(100vh-64px)] bg-[#fff8ef] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-[#85332a]" />
+      </div>
+    )
+  }
+
+   // 2. Si auth está listo pero no hay user → redirigir a login
+  if (!user) {
+    router.push('/login')
     return (
       <div className="min-h-[calc(100vh-64px)] bg-[#fff8ef] flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-[#85332a]" />

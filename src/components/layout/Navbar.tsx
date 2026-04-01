@@ -15,7 +15,8 @@ const links = [
 export default function Navbar() {
   const pathname = usePathname()
   const router = useRouter()
-  const { user, role, loading } = useUser()
+  const { user, role, isAuthReady, isProfileLoading } = useUser()
+  const showPanel = isAuthReady && !isProfileLoading && role
   const [open, setOpen] = useState(false)
 
   const handleUserClick = () => {
@@ -81,8 +82,8 @@ export default function Navbar() {
             )
           })}
 
-          {/* PANEL */}
-          {!loading && panelLink && (
+          {/* PANEL - CORREGIDO: usa showPanel en vez de !loading */}
+          {showPanel && panelLink && (
             <Link
               href={panelLink}
               className={`flex items-center gap-2 ${
@@ -96,9 +97,7 @@ export default function Navbar() {
                 className="text-[18px]"
                 style={{
                   fontFamily: 'var(--font-newsreader)',
-                  color: (pathname.startsWith('/admin') || pathname.startsWith('/dashboard')) 
-                    ? '#F2E9DC' 
-                    : '#F2E9DC',
+                  color: '#F2E9DC',
                   fontWeight: (pathname.startsWith('/admin') || pathname.startsWith('/dashboard')) 
                     ? 700 
                     : 500,
@@ -124,106 +123,108 @@ export default function Navbar() {
 
       </div>
       <div className="w-full h-px bg-[#F2E9DC] opacity-15" />
+      
+      {/* MOBILE SIDEBAR */}
       {open && (
-      <>
-        {/* OVERLAY */}
-        <div
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
-          onClick={() => setOpen(false)}
-        />
+        <>
+          {/* OVERLAY */}
+          <div
+            className="fixed inset-0 bg-black/50 z-40 md:hidden"
+            onClick={() => setOpen(false)}
+          />
 
-        {/* SIDEBAR */}
-        <div className="fixed top-0 left-0 h-full w-[280px] bg-[#85332A] z-50 md:hidden p-6 flex flex-col">
+          {/* SIDEBAR */}
+          <div className="fixed top-0 left-0 h-full w-[280px] bg-[#85332A] z-50 md:hidden p-6 flex flex-col">
 
-          {/* HEADER DEL MENÚ */}
-          <div className="flex items-center justify-between mb-10">
-            <span
-              className="text-[#F2E9DC] font-black text-2xl uppercase"
-              style={{ fontFamily: 'var(--font-newsreader)' }}
-            >
-              Escenia
-            </span>
+            {/* HEADER DEL MENÚ */}
+            <div className="flex items-center justify-between mb-10">
+              <span
+                className="text-[#F2E9DC] font-black text-2xl uppercase"
+                style={{ fontFamily: 'var(--font-newsreader)' }}
+              >
+                Escenia
+              </span>
 
-            <button onClick={() => setOpen(false)}>
-              ✕
-            </button>
-          </div>
+              <button onClick={() => setOpen(false)}>
+                ✕
+              </button>
+            </div>
 
-          {/* LINKS */}
-          <div className="flex flex-col gap-6">
-            {links.map((link) => {
-              const isActive = pathname === link.href
+            {/* LINKS */}
+            <div className="flex flex-col gap-6">
+              {links.map((link) => {
+                const isActive = pathname === link.href
 
-              return (
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setOpen(false)}
+                    className={`flex flex-col ${
+                      isActive ? 'border-b border-white w-fit' : ''
+                    }`}
+                  >
+                    <span
+                      className="text-[22px]"
+                      style={{
+                        fontFamily: 'var(--font-newsreader)',
+                        color: isActive ? '#FFFFFF' : '#F2E9DC',
+                        fontWeight: isActive ? 700 : 400,
+                      }}
+                    >
+                      {link.label}
+                    </span>
+                  </Link>
+                )
+              })}
+
+              {/* PANEL MOBILE - CORREGIDO: usa showPanel */}
+              {showPanel && panelLink && (
                 <Link
-                  key={link.href}
-                  href={link.href}
+                  href={panelLink}
                   onClick={() => setOpen(false)}
-                  className={`flex flex-col ${
-                    isActive ? 'border-b border-white w-fit' : ''
+                  className={`flex items-center gap-3 ${
+                    pathname.startsWith('/admin') || pathname.startsWith('/dashboard') 
+                      ? 'border-b border-white w-fit' 
+                      : ''
                   }`}
                 >
+                  <LayoutDashboard size={20} color="#F2E9DC" />
                   <span
                     className="text-[22px]"
                     style={{
                       fontFamily: 'var(--font-newsreader)',
-                      color: isActive ? '#FFFFFF' : '#F2E9DC',
-                      fontWeight: isActive ? 700 : 400,
+                      color: '#F2E9DC',
+                      fontWeight: (pathname.startsWith('/admin') || pathname.startsWith('/dashboard')) 
+                        ? 700 
+                        : 500,
                     }}
                   >
-                    {link.label}
+                    {role === 'superadmin' ? 'Admin' : 'Panel'}
                   </span>
                 </Link>
-              )
-            })}
+              )}
+            </div>
 
-            {/* PANEL */}
-            {!loading && panelLink && (
-              <Link
-                href={panelLink}
-                onClick={() => setOpen(false)}
-                className={`flex items-center gap-3 ${
-                  pathname.startsWith('/admin') || pathname.startsWith('/dashboard') 
-                    ? 'border-b border-white w-fit' 
-                    : ''
-                }`}
+            {/* USER ABAJO */}
+            <div className="mt-auto pt-10">
+              <button
+                onClick={() => {
+                  handleUserClick()
+                  setOpen(false)
+                }}
+                className="flex items-center gap-3 text-[#F2E9DC] opacity-80 hover:opacity-100"
               >
-                <LayoutDashboard size={20} color="#F2E9DC" />
-                <span
-                  className="text-[22px]"
-                  style={{
-                    fontFamily: 'var(--font-newsreader)',
-                    color: '#F2E9DC',
-                    fontWeight: (pathname.startsWith('/admin') || pathname.startsWith('/dashboard')) 
-                      ? 700 
-                      : 500,
-                  }}
-                >
-                  {role === 'superadmin' ? 'Admin' : 'Panel'}
+                {user ? <Home size={20} /> : <User size={20} />}
+                <span className="text-lg">
+                  {user ? 'Perfil' : 'Iniciar sesión'}
                 </span>
-              </Link>
-            )}
-          </div>
+              </button>
+            </div>
 
-          {/* (OPCIONAL) USER ABAJO */}
-          <div className="mt-auto pt-10">
-            <button
-              onClick={() => {
-                handleUserClick()
-                setOpen(false)
-              }}
-              className="flex items-center gap-3 text-[#F2E9DC] opacity-80 hover:opacity-100"
-            >
-              {user ? <Home size={20} /> : <User size={20} />}
-              <span className="text-lg">
-                {user ? 'Perfil' : 'Iniciar sesión'}
-              </span>
-            </button>
           </div>
-
-        </div>
-      </>
-    )}
+        </>
+      )}
     </header>
   )
 }

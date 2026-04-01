@@ -1,32 +1,25 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import type { User } from '@supabase/supabase-js'
-import type { Tables } from '@/types/database.types'
+import { useUserStore } from '@/stores/userStore'
 
 const supabase = createClient()
 
-interface UseUserReturn {
-  user: User | null
-  profile: Tables<'profiles'> | null
-  role: string | null
-  loading: boolean
-  error: Error | null
-  refresh: () => void
-}
-
-export function useUser(): UseUserReturn {
-  const [user, setUser] = useState<User | null>(null)
-  const [profile, setProfile] = useState<Tables<'profiles'> | null>(null)
-  const [role, setRole] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
-  const [refreshKey, setRefreshKey] = useState(0)
-
-  const refresh = useCallback(() => {
-    setRefreshKey(prev => prev + 1)
-  }, [])
+export function useUser() {
+  const {
+    user,
+    profile,
+    role,
+    isAuthReady,
+    isProfileLoading,
+    setUser,
+    setProfile,
+    setRole,
+    setIsAuthReady,
+    setIsProfileLoading,
+    reset,
+  } = useUserStore()
 
   const loadProfile = async (userId: string) => {
     const { data, error } = await supabase
@@ -41,40 +34,59 @@ export function useUser(): UseUserReturn {
 
   useEffect(() => {
     let active = true
-    const init = async () => {
 
+    // Si ya tenemos datos persistidos, no empezar desde cero
+    // pero sí verificar que la sesión siga válida
+    const init = async () => {
       try {
-        setLoading(true)
+        // Si no hay auth ready, marcar que estamos verificando
+        if (!isAuthReady) {
+          setIsAuthReady(false)
+        }
+
         const { data, error } = await supabase.auth.getSession()
         const session = data?.session
-        const user = session?.user ?? null
-
-        if (!active) {
-          return
-        }
-
-        if (!user) {
-          setUser(null)
-          setProfile(null)
-          setRole(null)
-          setLoading(false)
-          return
-        }
-
-        setUser(user)
-        setLoading(false)
-
-        const profileData = await loadProfile(user.id)
+        const currentUser = session?.user ?? null
 
         if (!active) return
 
-        setProfile(profileData)
-        setRole(profileData?.role || null)
+        if (!currentUser) {
+          // No hay sesión activa
+          reset()
+          return
+        }
+
+        // Hay sesión: verificar si cambió el usuario
+        if (currentUser.id !== user?.id) {
+          // Usuario diferente, resetear y cargar todo
+          setUser(currentUser)
+          setRole(null)
+          setProfile(null)
+        }
+
+        setIsAuthReady(true)
+
+        // Cargar perfil solo si no lo tenemos o cambió el user
+        if (!profile || currentUser.id !== user?.id) {
+          setIsProfileLoading(true)
+          try {
+            const profileData = await loadProfile(currentUser.id)
+            if (!active) return
+
+            setProfile(profileData)
+            setRole(profileData?.role || null)
+          } catch (err) {
+            console.error('Error cargando perfil:', err)
+            setProfile(null)
+            setRole(null)
+          } finally {
+            if (active) setIsProfileLoading(false)
+          }
+        }
 
       } catch (err) {
         console.error('INIT ERROR:', err)
-        if (active) setError(err as Error)
-      } finally {
+        setIsAuthReady(true)
       }
     }
 
@@ -84,28 +96,31 @@ export function useUser(): UseUserReturn {
       async (_event, session) => {
         if (!active) return
 
-        if (!session?.user) {
-          setUser(null)
-          setProfile(null)
-          setRole(null)
-          setLoading(false)
+        const currentUser = session?.user ?? null
+
+        if (!currentUser) {
+          reset()
           return
         }
 
-        setUser(session.user)
-        setLoading(true)
+        // Solo actualizar si cambió
+        if (currentUser.id !== user?.id) {
+          setUser(currentUser)
+          setIsAuthReady(true)
+          setIsProfileLoading(true)
 
-        try {
-          const profileData = await loadProfile(session.user.id)
+          try {
+            const profileData = await loadProfile(currentUser.id)
+            if (!active) return
 
-          if (!active) return
-
-          setProfile(profileData)
-          setRole(profileData?.role || null)
-        } catch (err) {
-          if (active) setError(err as Error)
-        } finally {
-          if (active) setLoading(false)
+            setProfile(profileData)
+            setRole(profileData?.role || null)
+          } catch (err) {
+            setProfile(null)
+            setRole(null)
+          } finally {
+            if (active) setIsProfileLoading(false)
+          }
         }
       }
     )
@@ -114,7 +129,19 @@ export function useUser(): UseUserReturn {
       active = false
       subscription.unsubscribe()
     }
-  }, [refreshKey])
+  }, [user?.id]) // ← dependencia clave: solo re-ejecutar si cambia el user
 
-  return { user, profile, role, loading, error, refresh }
+  const refresh = useCallback(() => {
+    setIsAuthReady(false)
+  }, [setIsAuthReady])
+
+  return {
+    user,
+    profile,
+    role,
+    isAuthReady,
+    isProfileLoading,
+    error: null, // manejar si lo necesitas
+    refresh,
+  }
 }
