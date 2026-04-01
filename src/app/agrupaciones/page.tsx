@@ -3,7 +3,6 @@ import { createClient } from '@/lib/supabase/server'
 import AgrupacionesContent from './AgrupacionesContent'
 import Loading from './loading'
 
-// ✅ ISR: Revalida cada 5 minutos automáticamente
 export const revalidate = 300
 
 export default async function AgrupacionesPage() {
@@ -11,7 +10,16 @@ export default async function AgrupacionesPage() {
   
   const { data, error } = await supabase
     .from('groups')
-    .select('id, name, city, region, cover_url, slug, description')
+    .select(`
+      id, 
+      name, 
+      city, 
+      region, 
+      slug, 
+      description,
+      avatar_url,
+      gallery_items (url, sort_order)
+    `)
     .eq('status', 'active')
     .order('name', { ascending: true })
 

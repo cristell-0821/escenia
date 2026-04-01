@@ -1,15 +1,18 @@
+// src/components/agrupaciones/GroupsGrid.tsx
 'use client'
 
 import Image from 'next/image'
 import Link from 'next/link'
+import { ChevronRight } from 'lucide-react'
 
 interface Group {
   id: string
   name: string
   city: string | null
   region: string | null
-  cover_url: string | null
   slug: string
+  avatar_url?: string | null
+  gallery_items?: { url: string }[]
 }
 
 interface Props {
@@ -20,43 +23,59 @@ export default function GroupsGrid({ groups }: Props) {
   if (groups.length === 0) {
     return (
       <div className="text-center py-20">
-        <p className="text-[#554240] text-xl">No se encontraron agrupaciones</p>
+        <p 
+          className="text-[#554240] text-xl"
+          style={{ fontFamily: 'var(--font-newsreader)' }}
+        >
+          No se encontraron agrupaciones
+        </p>
       </div>
     )
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-      {groups.map((group, index) => (
-        <Link
-          key={group.id}
-          href={`/agrupaciones/${group.slug}`}
-          className="group block"
-        >
-          <div className="relative aspect-[4/5] overflow-hidden bg-[#EEE7DB] mb-4">
-            {group.cover_url ? (
-              <Image
-                src={group.cover_url}
-                alt={group.name}
-                fill
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                loading={index < 3 ? 'eager' : 'lazy'} // ✅ Primera carga optimizada
-                priority={index < 3} // ✅ Solo las primeras 3 son prioritarias
-              />
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center text-[#554240]/50">
-                <span>Sin imagen</span>
-              </div>
-            )}
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
+      {groups.map((group) => (
+        <article key={group.id} className="group flex flex-col">
+          {/* Imagen - Usa gallery_items[1] o avatar_url, NUNCA cover_url */}
+          <div className="aspect-[4/5] overflow-hidden bg-[#EEE7DB] mb-6">
+            <Image
+              src={group.gallery_items?.[1]?.url || group.avatar_url || '/img/agrupaciones/agrupacion.png'}
+              alt={group.name}
+              width={400}
+              height={500}
+              className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+            />
           </div>
-          <h3 className="text-xl font-bold text-[#1E1B14] group-hover:text-[#85332A] transition-colors">
-            {group.name}
-          </h3>
-          <p className="text-[#554240] text-sm">
-            {group.city}{group.region && `, ${group.region}`}
-          </p>
-        </Link>
+
+          {/* Contenido */}
+          <div className="flex flex-col flex-grow items-start">
+            {/* Ubicación */}
+            <span
+              className="italic text-sm text-[#7D5700] mb-2 tracking-wide"
+              style={{ fontFamily: 'var(--font-newsreader)' }}
+            >
+              {group.city}{group.region && `, ${group.region}`}
+            </span>
+
+            {/* Nombre */}
+            <h3
+              className="text-3xl font-bold text-[#1E1B14] mb-6 leading-tight group-hover:text-[#85332A] transition-colors"
+              style={{ fontFamily: 'var(--font-newsreader)' }}
+            >
+              {group.name}
+            </h3>
+
+            {/* Link */}
+            <Link
+              href={`/agrupaciones/${group.slug}`}
+              className="mt-auto inline-flex items-center gap-2 font-bold text-[10px] uppercase tracking-[0.3em] text-[#85332A] border-b border-[#85332A]/20 pb-1 hover:border-[#85332A] transition-all"
+            >
+              Ver Perfil
+              <ChevronRight size={14} />
+            </Link>
+          </div>
+        </article>
       ))}
     </div>
   )

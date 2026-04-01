@@ -14,24 +14,23 @@ const supabasePublic = createClient(
 )
 
 // ✅ CACHE funciona porque no usa cookies
-const getGroup = unstable_cache(
-  async (slug: string) => {
-     console.log('Buscando slug:', slug) // ✅ DEBUG
-    const { data, error } = await supabasePublic
-      .from('groups')
-      .select('*')
-      .eq('slug', slug)
-      .eq('status', 'active')
-      .single()
-      console.log('Resultado:', data ? 'ENCONTRADO' : 'NO ENCONTRADO') // ✅ DEBUG
-    console.log('Error:', error) // ✅ DEBUG
-    
-    if (error || !data) return null
-    return data
-  },
-  ['group-detail'],
-  { revalidate: 300, tags: ['groups'] }
-)
+const getGroup = async (slug: string) => {
+  return unstable_cache(
+    async () => {
+      const { data, error } = await supabasePublic
+        .from('groups')
+        .select('*')
+        .eq('slug', slug)
+        .eq('status', 'active')
+        .single()
+
+      if (error || !data) return null
+      return data
+    },
+    [`group-detail-${slug}`],
+    { revalidate: 300 }
+  )()
+}
 
 const getGroupGallery = unstable_cache(
   async (groupId: string) => {
@@ -39,7 +38,7 @@ const getGroupGallery = unstable_cache(
       .from('gallery_items')
       .select('*')
       .eq('group_id', groupId)
-      .order('created_at', { ascending: false })
+      .order('sort_order', { ascending: true })
     return data || []
   },
   ['group-gallery'],

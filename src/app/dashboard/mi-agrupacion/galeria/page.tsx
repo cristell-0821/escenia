@@ -132,6 +132,8 @@ export default function GaleriaPage() {
   const [groupId, setGroupId] = useState<string>('') 
   const [gallery, setGallery] = useState<any[]>([])
   const [hasChanges, setHasChanges] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState<{current: number, total: number} | null>(null)
+  const [uploadSuccess, setUploadSuccess] = useState(false)
 
   // Sensores para DnD
   const sensors = useSensors(
@@ -229,15 +231,19 @@ export default function GaleriaPage() {
     if (!files || !groupId) return
 
     setUploading(true)
+    setUploadSuccess(false)
+    setUploadProgress({ current: 0, total: files.length })
 
-    // Obtener el sort_order más alto actual
     const maxOrder = gallery.length > 0 
       ? Math.max(...gallery.map(g => g.sort_order || 0)) 
       : 0
 
+    let successCount = 0
+
     for (let i = 0; i < files.length; i++) {
-      const file = files[i]
+      setUploadProgress({ current: i + 1, total: files.length })
       
+      const file = files[i]
       if (!file.type.startsWith('image/')) continue
       if (file.size > 5 * 1024 * 1024) continue
 
@@ -268,6 +274,7 @@ export default function GaleriaPage() {
 
         if (dbError) throw dbError
 
+        successCount++
       } catch (err) {
         console.error('Error subiendo:', err)
       }
@@ -275,6 +282,12 @@ export default function GaleriaPage() {
 
     await loadGallery()
     setUploading(false)
+    setUploadProgress(null)
+    
+    if (successCount > 0) {
+      setUploadSuccess(true)
+      setTimeout(() => setUploadSuccess(false), 3000)
+    }
   }
 
   const handleDelete = async (itemId: string, url: string) => {
@@ -324,9 +337,25 @@ export default function GaleriaPage() {
             <h1 className="font-serif text-5xl md:text-6xl text-[#1e1b14] mb-2">
               Galería
             </h1>
-            <p className="text-[#554240]">
-              Arrastra las fotos para reordenar. La primera será la portada.
-            </p>
+            
+            {/* Feedback de subida */}
+            {uploading && uploadProgress && (
+              <p className="text-[#85332a] font-medium animate-pulse">
+                Subiendo {uploadProgress.current} de {uploadProgress.total}...
+              </p>
+            )}
+            
+            {uploadSuccess && (
+              <p className="text-green-600 font-medium flex items-center gap-2">
+                ✓ Fotos guardadas correctamente
+              </p>
+            )}
+            
+            {!uploading && !uploadSuccess && (
+              <p className="text-[#554240]">
+                Arrastra las fotos para reordenar. La primera será la portada.
+              </p>
+            )}
           </div>
 
           <div className="flex gap-3">
@@ -410,20 +439,6 @@ export default function GaleriaPage() {
             </SortableContext>
           </DndContext>
         )}
-
-        {/* Instrucciones 
-        {gallery.length > 0 && (
-          <div className="bg-[#faf3e7] p-6 border border-[#dbc1bd]/20">
-            <h4 className="font-bold text-[#554240] uppercase tracking-wider text-sm mb-2">Cómo usar</h4>
-            <ul className="text-sm text-[#554240] space-y-1 list-disc list-inside">
-              <li>Arrastra las fotos para cambiar el orden</li>
-              <li>La primera foto (número 1) se mostrará como portada grande</li>
-              <li>Haz clic en "Guardar Orden" para aplicar los cambios</li>
-              <li>Pasa el mouse sobre una foto para ver opciones (mover/eliminar)</li>
-            </ul>
-          </div>
-        )} */}
-
       </div>
     </div>
   )

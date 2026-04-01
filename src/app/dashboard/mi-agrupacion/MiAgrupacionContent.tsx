@@ -15,6 +15,7 @@ import {
   Save,
   Loader2,
   ExternalLink,
+  UserCircle, // Icono para avatar
 } from 'lucide-react'
 import Link from 'next/link'
 import InstagramIcon from '@/assets/icons/instagram.svg'
@@ -44,9 +45,9 @@ export default function MiAgrupacionContent({ group }: Props) {
   const groupId = group?.id
 
   const [saving, setSaving] = useState(false)
-  const [uploading, setUploading] = useState(false)
+  const [uploadingCover, setUploadingCover] = useState(false)
+  const [uploadingAvatar, setUploadingAvatar] = useState(false) // Separar estados
 
-  // 🔥 SOLO esta validación queda
   if (!group || !groupId) {
     return (
       <div className="min-h-screen bg-[#fff8ef] flex items-center justify-center" style={weavePattern}>
@@ -92,6 +93,7 @@ export default function MiAgrupacionContent({ group }: Props) {
     }
   }
 
+  // Handler para portada
   const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file || !groupId) return
@@ -105,7 +107,7 @@ export default function MiAgrupacionContent({ group }: Props) {
       return
     }
 
-    setUploading(true)
+    setUploadingCover(true)
 
     try {
       const fileExt = file.name.split('.').pop()
@@ -134,7 +136,55 @@ export default function MiAgrupacionContent({ group }: Props) {
     } catch (err: any) {
       alert('Error al subir imagen: ' + err.message)
     } finally {
-      setUploading(false)
+      setUploadingCover(false)
+    }
+  }
+
+  // ✅ NUEVO: Handler para avatar/logo
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !groupId) return
+
+    // Validar formato PNG (opcional pero recomendado)
+    if (!file.type.includes('png')) {
+      alert('Por favor sube una imagen en formato PNG para mejor calidad')
+      // O quita esta validación si quieres permitir cualquier formato
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      alert('El logo debe ser menor a 2MB')
+      return
+    }
+
+    setUploadingAvatar(true)
+
+    try {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${groupId}-avatar-${Date.now()}.${fileExt}`
+      const filePath = `avatars/${fileName}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('group-assets')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: true
+        })
+
+      if (uploadError) throw uploadError
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('group-assets')
+        .getPublicUrl(filePath)
+
+      const result = await updateGroup(groupId, { avatar_url: publicUrl })
+      
+      if (result?.error) throw new Error(result.error)
+
+      router.refresh()
+
+    } catch (err: any) {
+      alert('Error al subir logo: ' + err.message)
+    } finally {
+      setUploadingAvatar(false)
     }
   }
 
@@ -157,7 +207,6 @@ export default function MiAgrupacionContent({ group }: Props) {
           </p>
         </section>
 
-        {/* TODO tu formulario sigue EXACTAMENTE igual ↓ */}
         <form onSubmit={handleSubmit} className="space-y-16">
           
           {/* PORTADA */}
@@ -184,19 +233,19 @@ export default function MiAgrupacionContent({ group }: Props) {
                 )}
                 
                 <div className="absolute inset-0 bg-[#1e1b14]/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <label className={`cursor-pointer bg-[#85332a] text-white px-6 py-3 font-bold tracking-widest uppercase text-xs flex items-center gap-2 hover:bg-[#a44a3f] transition-all ${uploading ? 'opacity-50' : ''}`}>
-                    {uploading ? (
+                  <label className={`cursor-pointer bg-[#85332a] text-white px-6 py-3 font-bold tracking-widest uppercase text-xs flex items-center gap-2 hover:bg-[#a44a3f] transition-all ${uploadingCover ? 'opacity-50' : ''}`}>
+                    {uploadingCover ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
                       <Camera className="w-4 h-4" />
                     )}
-                    {uploading ? 'Subiendo...' : 'Cambiar Portada'}
+                    {uploadingCover ? 'Subiendo...' : 'Cambiar Portada'}
                     <input 
                       type="file" 
                       accept="image/*"
                       className="hidden" 
                       onChange={handleCoverUpload}
-                      disabled={uploading}
+                      disabled={uploadingCover}
                     />
                   </label>
                 </div>
@@ -205,6 +254,59 @@ export default function MiAgrupacionContent({ group }: Props) {
             <p className="text-sm text-[#554240]/60">
               Recomendado: imagen horizontal 21:9, mínimo 1920px de ancho. Máximo 5MB.
             </p>
+          </section>
+
+          {/* ✅ NUEVO: LOGO/AVATAR */}
+          <section className="space-y-6">
+            <h2 className="font-serif text-2xl text-[#85332a] border-b border-[#dbc1bd]/30 pb-4">
+              Logo de la Agrupación
+            </h2>
+            
+            <div className="flex items-start gap-8">
+              <div className="relative group">
+                <div className="w-32 h-32 rounded-full bg-[#dbc1bd]/20 overflow-hidden border-2 border-[#dbc1bd]/30 relative">
+                  {group.avatar_url ? (
+                    <img 
+                      src={group.avatar_url} 
+                      alt="Logo" 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-[#554240]/40">
+                      <UserCircle className="w-16 h-16" />
+                    </div>
+                  )}
+                  
+                  <div className="absolute inset-0 bg-[#1e1b14]/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-full">
+                    <label className={`cursor-pointer bg-[#85332a] text-white px-3 py-2 font-bold tracking-widest uppercase text-[10px] flex items-center gap-1 hover:bg-[#a44a3f] transition-all ${uploadingAvatar ? 'opacity-50' : ''}`}>
+                      {uploadingAvatar ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : (
+                        <Camera className="w-3 h-3" />
+                      )}
+                      <input 
+                        type="file" 
+                        accept="image/png,image/jpeg,image/jpg"
+                        className="hidden" 
+                        onChange={handleAvatarUpload}
+                        disabled={uploadingAvatar}
+                      />
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex-1 space-y-2">
+                <p className="text-sm text-[#554240]">
+                  Este logo se mostrará en la sección "Nosotros" de tu perfil público, 
+                  debajo del eslogan.
+                </p>
+                <p className="text-xs text-[#554240]/60">
+                  Recomendado: imagen cuadrada o circular, formato PNG con fondo transparente. 
+                  Máximo 2MB.
+                </p>
+              </div>
+            </div>
           </section>
 
           {/* IDENTIDAD */}
@@ -437,21 +539,5 @@ export default function MiAgrupacionContent({ group }: Props) {
         </form>
       </div>
     </div>
-  )
-}
-
-// Componente de tab
-function TabLink({ href, label, active }: { href: string; label: string; active?: boolean }) {
-  return (
-    <Link 
-      href={href}
-      className={`pb-4 font-medium tracking-widest uppercase text-sm flex items-center gap-2 transition-colors border-b-2 ${
-        active 
-          ? 'text-[#85332a] border-[#85332a]' 
-          : 'text-[#554240] border-transparent hover:text-[#85332a] hover:border-[#85332a]/50'
-      }`}
-    >
-      {label}
-    </Link>
   )
 }

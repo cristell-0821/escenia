@@ -18,6 +18,7 @@ export async function updateGroup(groupId: string, data: {
   founded_year?: number | null
   dancers_count?: number | null
   cover_url?: string | null
+  avatar_url?: string | null
 }) {
   const supabase = await createClient()
 

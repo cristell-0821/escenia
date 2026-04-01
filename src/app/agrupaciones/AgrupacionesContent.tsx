@@ -10,9 +10,10 @@ interface Group {
   name: string
   city: string | null
   region: string | null
-  cover_url: string | null
   slug: string
   description: string | null
+  avatar_url?: string | null
+  gallery_items?: { url: string; sort_order: number | null }[]
 }
 
 interface Props {

@@ -84,6 +84,20 @@ export default function GroupDetailContent({ group, gallery, events }: Props) {
               >
                 {group.slogan || 'Preservando nuestras raíces culturales.'}
               </h2>
+              
+              {/* ✅ LOGO AQUÍ */}
+              {group.avatar_url && (
+                <div className="mb-8">
+                  <Image
+                    src={group.avatar_url}
+                    alt={`Logo de ${group.name}`}
+                    width={120}
+                    height={120}
+                    className="rounded-full object-cover border-2 border-[#85332A]/20"
+                  />
+                </div>
+              )}
+              
               <div className="h-1 w-24 bg-[#FDBE49]"></div>
             </div>
 
