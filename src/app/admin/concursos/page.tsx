@@ -56,7 +56,7 @@ export default async function ConcursosPage() {
       </div>
 
       {/* Stats - Ahora 4 columnas */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <StatCard label="Publicados" count={publicados.length} color="green" icon={Eye} />
         <StatCard label="Borradores" count={borradores.length} color="yellow" icon={EyeOff} />
         <StatCard label="Por Aprobar" count={porAprobar.length} color="orange" icon={CheckCircle} />

@@ -38,7 +38,7 @@ export default async function AgrupacionesPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         <StatCard 
           label="Activas" 
           count={activas.length} 
@@ -129,8 +129,8 @@ function AgrupacionRow({ grupo }: { grupo: any }) {
   }
 
   return (
-    <div className="bg-[#faf3e7] p-6 border border-[#dbc1bd]/20 flex items-center justify-between group hover:border-[#85332a]/30 transition-colors">
-      <div className="flex items-center gap-6">
+    <div className="bg-[#faf3e7] p-4 sm:p-6 border border-[#dbc1bd]/20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 group hover:border-[#85332a]/30 transition-colors">
+      <div className="flex items-start sm:items-center gap-4 sm:gap-6">
         {/* Avatar */}
         <div className="w-16 h-16 bg-[#85332a]/10 flex items-center justify-center">
           <Theater className="w-8 h-8 text-[#85332a]/40" />
@@ -140,7 +140,7 @@ function AgrupacionRow({ grupo }: { grupo: any }) {
           <h3 className="font-serif text-xl text-[#1e1b14] group-hover:text-[#85332a] transition-colors">
             {grupo.name}
           </h3>
-          <div className="flex items-center gap-4 mt-1 text-sm text-[#554240]">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 mt-1 text-sm text-[#554240]">
             <span className="flex items-center gap-1">
               <MapPin className="w-4 h-4" />
               {grupo.city}, {grupo.region}
@@ -153,7 +153,7 @@ function AgrupacionRow({ grupo }: { grupo: any }) {
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
         <span className={`px-3 py-1 text-xs font-bold tracking-wider uppercase ${statusColors[grupo.status as keyof typeof statusColors]}`}>
           {statusLabels[grupo.status as keyof typeof statusLabels]}
         </span>

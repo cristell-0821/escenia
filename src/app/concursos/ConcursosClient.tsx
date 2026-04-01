@@ -60,14 +60,14 @@ export default function ConcursosClient({ initialContests }: Props) {
   return (
     <main className="min-h-screen pt-12">
       {/* Hero Section */}
-      <section className="px-8 mb-24 max-w-7xl mx-auto">
+      <section className="px-4 md:px-8 mb-16 md:mb-24 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-end">
           <div className="md:col-span-8">
             <span className="font-label uppercase tracking-[0.3em] text-[#85332A] mb-4 block text-xs font-bold">
               Patrimonio en Movimiento
             </span>
             <h2
-              className="text-7xl md:text-8xl font-bold text-[#1E1B14] leading-tight tracking-tighter"
+              className="text-4xl md:text-8xl font-bold text-[#1E1B14] leading-tight tracking-tighter"
               style={{ fontFamily: 'var(--font-newsreader)' }}
             >
               Concursos <br /> <span className="italic font-normal">Nacionales</span>
@@ -75,7 +75,7 @@ export default function ConcursosClient({ initialContests }: Props) {
           </div>
           <div className="md:col-span-4 pb-4">
             <p
-              className="text-[#554240] leading-relaxed text-lg border-l-2 border-[#DBC1BD] pl-6 italic"
+              className="text-[#554240] leading-relaxed text-base md:text-lg border-l-2 border-[#DBC1BD] pl-4 md:pl-6 italic"
               style={{ fontFamily: 'var(--font-newsreader)' }}
             >
               La excelencia técnica y la pasión heredada se encuentran en el escenario. Descubre las
@@ -87,8 +87,8 @@ export default function ConcursosClient({ initialContests }: Props) {
 
       {/* Filters */}
       <section className="bg-[#FAF3E7] py-8 mb-20">
-        <div className="px-8 max-w-7xl mx-auto flex flex-wrap gap-8 items-center justify-between">
-          <div className="flex gap-10 overflow-x-auto pb-2">
+        <div className="px-4 md:px-8 max-w-7xl mx-auto flex flex-col md:flex-row gap-6 md:gap-8 items-start md:items-center justify-between">
+          <div className="flex gap-6 md:gap-10 overflow-x-auto pb-2 w-full md:w-auto">
             {[
               { id: 'proximos', label: 'PRÓXIMOS' },
               { id: 'historial', label: 'HISTORIAL' },
@@ -107,7 +107,7 @@ export default function ConcursosClient({ initialContests }: Props) {
               </button>
             ))}
           </div>
-          <div className="flex items-center gap-4 text-[#554240]">
+          <div className="flex items-center gap-3 text-[#554240]">
             <ListFilter size={20} />
             <span className="text-sm font-bold uppercase tracking-widest">
               {filteredContests.length} concursos
@@ -168,7 +168,7 @@ export default function ConcursosClient({ initialContests }: Props) {
               </div>
 
               <h3
-                className="text-5xl md:text-6xl font-extrabold text-[#1E1B14] mb-8 tracking-tight"
+                className="text-3xl md:text-6xl font-extrabold text-[#1E1B14] mb-8 tracking-tight"
                 style={{ fontFamily: 'var(--font-newsreader)' }}
               >
                 {contest.title}
@@ -176,13 +176,13 @@ export default function ConcursosClient({ initialContests }: Props) {
 
               <div className="space-y-10">
                 {/* Fecha y Ubicación */}
-                <div className="flex flex-col md:flex-row md:items-center gap-12">
+                <div className="flex flex-col md:flex-row md:items-center gap-6 md:gap-12">
                   {contest.event_date && (
                     <div>
                         <span className="block text-[10px] font-bold uppercase tracking-widest text-[#554240] mb-1">
                         FECHA Y HORA
                         </span>
-                        <p className="text-xl font-bold text-[#1E1B14]">
+                        <p className="text-lg md:text-xl font-bold text-[#1E1B14]">
                         {/* ✅ USAR LA FUNCIÓN CORRECTA */}
                         {formatDateTimeDisplay(contest.event_date)}
                         </p>
@@ -200,18 +200,18 @@ export default function ConcursosClient({ initialContests }: Props) {
 
                 {/* Premio */}
                 {contest.prize && (
-                  <div className="bg-[#FAF3E7] p-6 border-l-4 border-[#85332A]">
+                  <div className="bg-[#FAF3E7] p-4 md:p-6 border-l-4 border-[#85332A]">
                     <span className="block text-[10px] font-bold uppercase tracking-widest text-[#554240] mb-1">
                       PREMIO
                     </span>
-                    <p className="text-2xl font-bold text-[#85332A]">{contest.prize}</p>
+                    <p className="text-xl md:text-2xl font-bold text-[#85332A]">{contest.prize}</p>
                   </div>
                 )}
 
                 {/* CTA */}
                 <Link
                   href={`/concursos/${contest.id}`}
-                  className="bg-[#85332A] text-white px-12 py-5 font-bold uppercase tracking-[0.2em] text-xs hover:bg-[#A44A3F] transition-all active:scale-95 inline-block text-center"
+                  className="bg-[#85332A] text-white px-8 md:px-12 py-4 md:py-5 font-bold uppercase tracking-[0.2em] text-xs hover:bg-[#A44A3F] transition-all active:scale-95 inline-block text-center"
                 >
                   Más Información
                 </Link>
@@ -222,11 +222,11 @@ export default function ConcursosClient({ initialContests }: Props) {
       </section>
 
       {/* Newsletter */}
-      <section className="py-24 bg-[#1E1B14] text-[#F2E9DC]">
-        <div className="px-8 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+      <section className="py-16 md:py-24 bg-[#1E1B14] text-[#F2E9DC]">
+        <div className="px-4 md:px-8 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
           <div>
             <h2
-              className="text-5xl font-bold mb-6"
+              className="text-3xl md:text-5xl font-bold mb-6"
               style={{ fontFamily: 'var(--font-newsreader)' }}
             >
               No te pierdas <br />
@@ -240,7 +240,7 @@ export default function ConcursosClient({ initialContests }: Props) {
           <div className="flex flex-col gap-4">
             <div className="relative">
               <input
-                className="w-full bg-transparent border-b border-[#D1BCBA]/30 py-4 focus:outline-none focus:border-[#FFDEAB] transition-colors text-xl font-headline italic placeholder:text-white/20"
+                className="w-full bg-transparent border-b border-[#D1BCBA]/30 py-4 focus:outline-none focus:border-[#FFDEAB] transition-colors text-lg md:text-xl font-headline italic placeholder:text-white/20"
                 style={{ fontFamily: 'var(--font-newsreader)' }}
                 placeholder="Tu correo electrónico"
                 type="email"

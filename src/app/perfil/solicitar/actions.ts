@@ -14,7 +14,8 @@ interface SolicitudData {
   contact_phone?: string
   instagram?: string
   facebook?: string
-  youtube?: string | null 
+  youtube?: string | null
+  tiktok?: string | null
   founded_year?: number
 }
 

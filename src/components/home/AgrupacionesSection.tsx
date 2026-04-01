@@ -5,13 +5,13 @@ import Link from 'next/link'
 
 export default function AgrupacionesSection() {
   return (
-    <section className="bg-[#FFF8EF] py-32 px-8 overflow-hidden">
+    <section className="bg-[#FFF8EF] py-20 md:py-32 px-4 md:px-8 overflow-hidden">
     <div className="max-w-7xl mx-auto">
       <div className="flex flex-col md:flex-row gap-20 items-center">
 
         {/* IMAGEN */}
         <div className="w-full md:w-1/2 order-2 md:order-1">
-          <div className="relative w-full h-[600px] group">
+          <div className="relative w-full h-[350px] md:h-[600px] group">
 
             <Image
               src="/img/home/agrupacion.png"
@@ -31,10 +31,10 @@ export default function AgrupacionesSection() {
         </div>
 
         {/* TEXTO */}
-        <div className="w-full md:w-1/2 order-1 md:order-2 space-y-10">
+        <div className="w-full md:w-1/2 order-1 md:order-2 space-y-6 md:space-y-10">
 
           <h2
-            className="text-[52px] leading-[1.1] text-[#1E1B14]"
+            className="text-[32px] md:text-[52px] leading-[1.2] md:leading-[1.1] text-[#1E1B14]"
             style={{ fontFamily: 'var(--font-newsreader)' }}
           >
             Conecta con las{" "}
@@ -44,7 +44,7 @@ export default function AgrupacionesSection() {
             del país.
           </h2>
 
-          <p className="text-lg text-[#554240] leading-relaxed max-w-lg">
+          <p className="text-base md:text-lg text-[#554240] leading-relaxed max-w-lg">
             Explora nuestra base de datos con agrupaciones profesionales,
             escuelas y asociaciones culturales de todo el Perú.
           </p>
@@ -55,7 +55,7 @@ export default function AgrupacionesSection() {
             {/* ITEM 1 */}
             <div className="flex items-center gap-6 group cursor-pointer">
               <span
-                className="text-3xl text-[#DBC1BD] group-hover:text-[#85332A] transition"
+                className="text-2xl md:text-3xl text-[#DBC1BD] group-hover:text-[#85332A] transition"
                 style={{ fontFamily: 'var(--font-newsreader)' }}
               >
                 01
@@ -64,7 +64,7 @@ export default function AgrupacionesSection() {
               <div className="h-px flex-1 bg-[#DBC1BD]/40" />
 
               <h4
-                className="text-2xl text-[#1E1B14]"
+                className="text-lg md:text-2xl text-[#1E1B14]"
                 style={{ fontFamily: 'var(--font-newsreader)' }}
               >
                 Agrupaciones Profesionales
@@ -72,7 +72,7 @@ export default function AgrupacionesSection() {
             </div>
 
             {/* ITEM 2 */}
-            <div className="flex items-center gap-6 group cursor-pointer">
+            <div className="flex items-center gap-4 md:gap-6 group cursor-pointer">
               <span
                 className="text-3xl text-[#DBC1BD] group-hover:text-[#85332A] transition"
                 style={{ fontFamily: 'var(--font-newsreader)' }}

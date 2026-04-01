@@ -111,10 +111,10 @@ export default function ConcursoDetalleClient({
     <main className="pb-24 bg-[#fff8ef]">
       
       {/* Hero Section */}
-      <section className="w-full bg-[#f4ede1] px-8 py-12 md:py-20">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+      <section className="w-full bg-[#f4ede1] px-4 md:px-8 py-10 md:py-20">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
           
-          <div className="relative w-full max-w-md mx-auto md:mx-0">
+          <div className="relative w-full max-w-sm md:max-w-md mx-auto md:mx-0">
             <div className="relative aspect-[3/4] overflow-hidden shadow-2xl border-8 border-white rotate-[-1deg] hover:rotate-0 transition-transform duration-500">
               {concurso.cover_url ? (
                 <Image
@@ -127,7 +127,9 @@ export default function ConcursoDetalleClient({
               ) : (
                 <div className="absolute inset-0 bg-[#85332a] flex flex-col items-center justify-center text-white p-8 text-center">
                   <Trophy className="w-20 h-20 mb-4 text-[#fdbe49]" />
-                  <p className="font-serif text-2xl italic">{concurso.title}</p>
+                  <p className="font-serif text-lg md:text-2xl italic">
+                    {concurso.title}
+                  </p>
                 </div>
               )}
               <div className="absolute inset-0 bg-[#85332a]/10 mix-blend-multiply" />
@@ -139,13 +141,13 @@ export default function ConcursoDetalleClient({
               <span className="text-[#85332a] font-sans font-bold uppercase tracking-[0.4em] text-xs mb-4 block">
                 {concurso.edition || 'GRAN CONCURSO'}
               </span>
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-black leading-[0.9] italic tracking-tighter text-[#85332a] mb-6 font-serif">
+              <h1 className="text-3xl md:text-6xl lg:text-7xl font-black leading-[1] md:leading-[0.9] italic tracking-tight md:tracking-tighter text-[#85332a] mb-4 md:mb-6 font-serif">
                 {concurso.title}
               </h1>
             </div>
             
-            <div className="space-y-2 border-l-4 border-[#85332a] pl-6 py-2">
-              <p className="text-[#1e1b14] font-serif text-2xl font-bold">
+            <div className="space-y-2 border-l-4 border-[#85332a] pl-4 md:pl-6 py-2">
+              <p className="text-[#1e1b14] text-lg md:text-2xl font-serif font-bold">
                 {concurso.city || 'Ciudad por definir'}, {concurso.region || 'Perú'}
               </p>
               <p className="text-[#554240] font-sans uppercase tracking-widest text-sm">
@@ -157,13 +159,13 @@ export default function ConcursoDetalleClient({
       </section>
 
       {/* Information Grid */}
-      <section className="px-8 py-16 max-w-7xl mx-auto space-y-20">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 items-start">
+      <section className="px-4 md:px-8 py-12 md:py-16 max-w-7xl mx-auto space-y-16 md:space-y-20">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-12 items-start">
           
           {/* Left Column */}
           <div className="md:col-span-5 space-y-12">
             <div className="space-y-4">
-              <h2 className="text-4xl font-bold italic text-[#85332a] font-serif">
+              <h2 className="text-xl md:text-4xl font-bold italic text-[#85332a] font-serif">
                 Detalles del Evento
               </h2>
               <div className="space-y-6 pt-6">
@@ -200,7 +202,7 @@ export default function ConcursoDetalleClient({
 
             {/* Map */}
             {concurso.maps_url && embedUrl ? (
-              <div className="relative aspect-video bg-[#eee7db] overflow-hidden">
+              <div className="relative aspect-[4/3] md:aspect-video bg-[#eee7db] overflow-hidden">
                 <iframe
                   src={embedUrl}
                   className="absolute inset-0 w-full h-full border-0 grayscale hover:grayscale-0 transition-all"
@@ -240,7 +242,7 @@ export default function ConcursoDetalleClient({
           </div>
 
           {/* Right Column */}
-          <div className="md:col-span-7 bg-[#faf3e7] p-12 space-y-12 relative overflow-hidden">
+          <div className="md:col-span-7 bg-[#faf3e7] p-6 md:p-12 space-y-10 md:space-y-12 relative overflow-hidden">
             
             {concurso.prize && (
               <div className="space-y-4">
@@ -320,8 +322,8 @@ export default function ConcursoDetalleClient({
         </div>
 
         {/* CTA Section */}
-        <div className="bg-[#85332a] p-12 md:p-20 text-center space-y-8 flex flex-col items-center">
-          <h2 className="text-white text-4xl md:text-6xl font-bold italic max-w-3xl font-serif">
+        <div className="bg-[#85332a] p-8 md:p-20 text-center space-y-6 md:space-y-8 flex flex-col items-center">
+          <h2 className="text-white text-2xl md:text-6xl font-bold italic max-w-3xl font-serif">
             ¿Listo para dejar tu huella en la pista?
           </h2>
           
@@ -336,7 +338,7 @@ export default function ConcursoDetalleClient({
 
         {/* Contact Section */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 border-t border-[#dbc1bd] pt-16">
-          <div className="md:col-span-5">
+          <div className="md:col-span-7 flex flex-col sm:flex-row flex-wrap gap-4 items-stretch">
             <h2 className="text-4xl font-bold italic mb-4 font-serif">
               ¿Dudas sobre el concurso?
             </h2>

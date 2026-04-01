@@ -8,6 +8,7 @@ import { MapPin, Mail, Users, Calendar, Share2, } from 'lucide-react'
 import YoutubeIcon from '@/assets/icons/youtube.svg'
 import InstagramIcon from '@/assets/icons/instagram.svg'
 import FacebookIcon from '@/assets/icons/facebook.svg'
+import TiktokIcon from '@/assets/icons/tiktok.svg'
 import { formatDateTimeDisplay } from '@/lib/date-utils'
 
 interface Props {
@@ -63,17 +64,11 @@ export default function GroupDetailContent({ group, gallery, events }: Props) {
             >
               {group.name}
             </h1>
-            {group.slogan && (
-              <p className="text-[#FFDEAB] text-xl md:text-2xl italic mt-4 max-w-2xl"
-                 style={{ fontFamily: 'var(--font-newsreader)' }}>
-                {group.slogan}
-              </p>
-            )}
           </div>
         </div> 
       </section>
 
-      {/* Nosotros - TU VERSIÓN ORIGINAL */}
+      {/* Nosotros */}
       <section className="bg-[#FFF8EF] py-20 md:py-24 px-8 weave-pattern">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-16 items-start">
@@ -143,7 +138,7 @@ export default function GroupDetailContent({ group, gallery, events }: Props) {
         </div>
       </section>
 
-      {/* Galería - TU VERSIÓN ORIGINAL */}
+      {/* Galería*/}
       <section className="bg-[#FAF3E7] py-24 md:py-32 px-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-baseline mb-16 md:mb-20 gap-4">
@@ -190,7 +185,7 @@ export default function GroupDetailContent({ group, gallery, events }: Props) {
         </div>
       </section>
 
-      {/* Agenda - TU VERSIÓN ORIGINAL CON BOTÓN "MÁS INFO" */}
+      {/* Agenda */}
       <section className="bg-[#FFF8EF] py-24 md:py-32 px-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center gap-8 mb-16 md:mb-24">
@@ -276,19 +271,19 @@ export default function GroupDetailContent({ group, gallery, events }: Props) {
         </div>  
       </section>
 
-      {/* Contacto - TU VERSIÓN ORIGINAL CON FORMULARIO COMPLETO */}
-      <section className="bg-[#1E1B14] text-[#F2E9DC] py-24 md:py-32 px-8">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-24">
+      {/* Contacto */}
+      <section className="bg-[#1E1B14] text-[#F2E9DC] py-16 md:py-32 px-4 md:px-8">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-24">
           {/* Contact Info - CON REDES SOCIALES */}
           <div>
             <h2
-              className="text-5xl md:text-6xl font-bold mb-12 md:mb-16"
+              className="text-3xl md:text-6xl font-bold mb-10 md:mb-16"
               style={{ fontFamily: 'var(--font-newsreader)' }}
             >
               Hablemos de Arte
             </h2>
 
-            <div className="space-y-12">
+            <div className="space-y-8 md:space-y-12">
               {group.city && (
                 <div className="flex items-start gap-6">
                   <MapPin className="text-[#FFDEAB] w-7 h-7" />
@@ -297,7 +292,7 @@ export default function GroupDetailContent({ group, gallery, events }: Props) {
                       Ubicación
                     </h5>
                     <p
-                      className="text-2xl italic text-[#F2E9DC]"
+                      className="text-lg md:text-2xl italic text-[#F2E9DC]"
                       style={{ fontFamily: 'var(--font-newsreader)' }}
                     >
                       {group.city}
@@ -326,8 +321,8 @@ export default function GroupDetailContent({ group, gallery, events }: Props) {
               )}
 
               {/* ✅ REDES SOCIALES QUE FALTABAN */}
-              {(group.instagram || group.facebook || group.youtube) && (
-                <div className="flex items-start gap-6">
+              {(group.instagram || group.facebook || group.youtube || group.tiktok) && (
+                <div className="flex items-start gap-4 md:gap-6">
                   <Share2 className="text-[#FFDEAB] w-7 h-7" />
                   <div>
                     <h5 className="font-label uppercase tracking-widest text-xs text-[#FFDEAB] mb-4">
@@ -367,6 +362,17 @@ export default function GroupDetailContent({ group, gallery, events }: Props) {
                           YouTube
                         </a>
                       )}
+                      {group.tiktok && (
+                        <a
+                          href={group.tiktok}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[#D1BCBA] hover:text-[#FFDEAB] transition-colors font-label text-sm flex items-center gap-2"
+                        >
+                          <TiktokIcon className="w-4 h-4 text-[#FFDEAB]" />
+                          TikTok
+                        </a>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -375,8 +381,8 @@ export default function GroupDetailContent({ group, gallery, events }: Props) {
           </div>
 
           {/* ✅ FORMULARIO COMPLETO INTERACTIVO */}
-          <div className="bg-[#2D2822] p-8 md:p-12">
-            <form onSubmit={handleSubmit} className="space-y-8">
+          <div className="bg-[#2D2822] p-6 md:p-12">
+            <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8">
               <div>
                 <label className="block font-label text-xs uppercase tracking-[0.2em] mb-4 text-[#D1BCBA]">
                   Nombre Completo
@@ -446,7 +452,7 @@ export default function GroupDetailContent({ group, gallery, events }: Props) {
 
               <button
                 type="submit"
-                className="w-full bg-[#F2E9DC] text-[#1E1B14] font-bold uppercase tracking-widest py-6 hover:bg-[#FFDEAB] transition-colors active:scale-95"
+                className="w-full bg-[#F2E9DC] text-[#1E1B14] font-bold uppercase tracking-widest py-4 md:py-6 hover:bg-[#FFDEAB] transition-colors active:scale-95"
               >
                 Enviar Mensaje
               </button>

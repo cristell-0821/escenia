@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
 import type { Tables } from '@/types/database.types'
 
-const supabase = createClient() // ✅ fuera del hook
+const supabase = createClient()
 
 interface UseUserReturn {
   user: User | null
@@ -33,7 +33,7 @@ export function useUser(): UseUserReturn {
       .from('profiles')
       .select('*')
       .eq('id', userId)
-      .single()
+      .maybeSingle()
 
     if (error) throw error
     return data
@@ -41,23 +41,28 @@ export function useUser(): UseUserReturn {
 
   useEffect(() => {
     let active = true
-
     const init = async () => {
+
       try {
         setLoading(true)
+        const { data, error } = await supabase.auth.getSession()
+        const session = data?.session
+        const user = session?.user ?? null
 
-        const { data: { user } } = await supabase.auth.getUser()
-
-        if (!active) return
+        if (!active) {
+          return
+        }
 
         if (!user) {
           setUser(null)
           setProfile(null)
           setRole(null)
+          setLoading(false)
           return
         }
 
         setUser(user)
+        setLoading(false)
 
         const profileData = await loadProfile(user.id)
 
@@ -67,9 +72,9 @@ export function useUser(): UseUserReturn {
         setRole(profileData?.role || null)
 
       } catch (err) {
+        console.error('INIT ERROR:', err)
         if (active) setError(err as Error)
       } finally {
-        if (active) setLoading(false)
       }
     }
 
@@ -83,10 +88,12 @@ export function useUser(): UseUserReturn {
           setUser(null)
           setProfile(null)
           setRole(null)
+          setLoading(false)
           return
         }
 
         setUser(session.user)
+        setLoading(true)
 
         try {
           const profileData = await loadProfile(session.user.id)
@@ -97,6 +104,8 @@ export function useUser(): UseUserReturn {
           setRole(profileData?.role || null)
         } catch (err) {
           if (active) setError(err as Error)
+        } finally {
+          if (active) setLoading(false)
         }
       }
     )

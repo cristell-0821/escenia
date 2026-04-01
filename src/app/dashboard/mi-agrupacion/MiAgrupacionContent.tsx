@@ -21,6 +21,7 @@ import Link from 'next/link'
 import InstagramIcon from '@/assets/icons/instagram.svg'
 import FacebookIcon from '@/assets/icons/facebook.svg'
 import YoutubeIcon from '@/assets/icons/youtube.svg'
+import TikTokIcon from '@/assets/icons/tiktok.svg'
 
 interface Props {
   group: any
@@ -79,6 +80,7 @@ export default function MiAgrupacionContent({ group }: Props) {
       instagram: formData.get('instagram') as string || null,
       facebook: formData.get('facebook') as string || null,
       youtube: formData.get('youtube') as string || null,
+      tiktok: formData.get('tiktok') as string || null,
       founded_year: formData.get('founded_year') ? parseInt(formData.get('founded_year') as string) : null,
       dancers_count: formData.get('dancers_count') ? parseInt(formData.get('dancers_count') as string) : null,
     }
@@ -470,7 +472,7 @@ export default function MiAgrupacionContent({ group }: Props) {
               Redes Sociales
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               <div>
                 <label className="block text-xs font-bold tracking-widest text-[#554240] uppercase mb-2 flex items-center gap-2">
                   <InstagramIcon className="w-4 h-4 text-[#554240]" />
@@ -512,28 +514,53 @@ export default function MiAgrupacionContent({ group }: Props) {
                   className="w-full bg-white border border-[#dbc1bd] px-4 py-3 text-[#554240] focus:outline-none focus:border-[#85332a]"
                 />
               </div>
+              <div>
+                <label className="block text-xs font-bold tracking-widest text-[#554240] uppercase mb-2 flex items-center gap-2">
+                  <TikTokIcon className="w-4 h-4 text-[#554240]" />
+                  TikTok
+                </label>
+                <input
+                  name="tiktok"
+                  type="url"
+                  defaultValue={group.tiktok || ''}
+                  placeholder="https://tiktok.com/@..."
+                  className="w-full bg-white border border-[#dbc1bd] px-4 py-3 text-[#554240] focus:outline-none focus:border-[#85332a]"
+                />
+              </div>
             </div>
           </section>
 
           {/* SUBMIT */}
-          <div className="flex items-center gap-4 pt-8 border-t border-[#dbc1bd]/30">
+          <div className="flex flex-col md:flex-row md:items-center gap-4 pt-8 border-t border-[#dbc1bd]/30">
+
             <button
               type="submit"
               disabled={saving}
-              className="flex items-center gap-2 bg-[#85332a] text-white px-10 py-4 font-bold tracking-widest uppercase text-sm hover:bg-[#a44a3f] transition-all disabled:opacity-50"
+              className="w-full md:w-auto flex items-center justify-center gap-2 
+              bg-[#85332a] text-white px-6 md:px-10 py-4 
+              font-bold tracking-widest uppercase text-xs md:text-sm 
+              hover:bg-[#a44a3f] transition-all disabled:opacity-50"
             >
-              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              {saving ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Save className="w-4 h-4" />
+              )}
               {saving ? 'Guardando...' : 'Guardar Cambios'}
             </button>
 
             <Link
               href={`/agrupaciones/${group.slug || ''}`}
               target="_blank"
-              className="flex items-center gap-2 border border-[#85332a] text-[#85332a] px-8 py-4 font-bold tracking-widest uppercase text-sm hover:bg-[#85332a] hover:text-white transition-all"
+              className="w-full md:w-auto flex items-center justify-center gap-2 
+              border border-[#85332a] text-[#85332a] px-6 md:px-8 py-4 
+              font-bold tracking-widest uppercase text-xs md:text-sm 
+              hover:bg-[#85332a] hover:text-white transition-all"
             >
               <ExternalLink className="w-4 h-4" />
               Ver Perfil Público
             </Link>
+
           </div>
 
         </form>

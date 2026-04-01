@@ -49,7 +49,8 @@ export default function SolicitarAgrupacionPage() {
       contact_phone: formData.get('contact_phone') as string || undefined,
       instagram: formData.get('instagram') as string || undefined,
       facebook: formData.get('facebook') as string || undefined,
-      website: formData.get('website') as string || undefined,
+      youtube: formData.get('youtube') as string || undefined,
+      tiktok: formData.get('tiktok') as string || undefined,
       founded_year: formData.get('founded_year') ? parseInt(formData.get('founded_year') as string) : undefined,
     }
 
@@ -274,15 +275,27 @@ export default function SolicitarAgrupacionPage() {
             </div>
 
             <div className="group">
-              <label className="block text-xs font-bold tracking-widest text-[#554240] uppercase mb-2" htmlFor="website">
-                Sitio Web
+              <label className="block text-xs font-bold tracking-widest text-[#554240] uppercase mb-2" htmlFor="youtube">
+                YouTube
               </label>
               <input
-                id="website"
-                name="website"
+                id="youtube"
+                name="youtube"
                 type="url"
                 className="w-full bg-transparent border-0 border-b border-[#dbc1bd] py-3 px-0 text-xl font-serif focus:ring-0 transition-all focus:border-[#85332a] outline-none"
-                placeholder="https://www.tuagrupacion.com"
+                placeholder="https://youtube.com/c/tuagrupacion"
+              />
+            </div>
+            <div className="group">
+              <label className="block text-xs font-bold tracking-widest text-[#554240] uppercase mb-2" htmlFor="tiktok">
+                TikTok
+              </label>
+              <input
+                id="tiktok"
+                name="tiktok"
+                type="url"
+                className="w-full bg-transparent border-0 border-b border-[#dbc1bd] py-3 px-0 text-xl font-serif focus:ring-0 transition-all focus:border-[#85332a] outline-none"
+                placeholder="https://tiktok.com/@tuagrupacion"
               />
             </div>
           </div>
