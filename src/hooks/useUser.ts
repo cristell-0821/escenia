@@ -6,21 +6,20 @@ import { useUserStore } from '@/stores/userStore'
 
 const supabase = createClient()
 
-export function useUser() {
+interface UseUserOptions {
+  loadGroup?: boolean // ← nuevo: cargar grupo o no
+}
+
+export function useUser(options: UseUserOptions = {}) {
+  const { loadGroup = false } = options
+  
   const {
-    user,
-    profile,
-    role,
-    isAuthReady,
-    isProfileLoading,
-    setUser,
-    setProfile,
-    setRole,
-    setIsAuthReady,
-    setIsProfileLoading,
-    reset,
+    user, profile, role, group, groupId, membership,
+    isAuthReady, isProfileLoading, isGroupLoading,
+    setUser, setProfile, setRole, setGroupData, setLoading, reset, resetGroup,
   } = useUserStore()
 
+  // Cargar perfil
   const loadProfile = async (userId: string) => {
     const { data, error } = await supabase
       .from('profiles')
@@ -32,61 +31,85 @@ export function useUser() {
     return data
   }
 
+  // En loadGroupData, cambia los nombres al retornar:
+  const loadGroupData = async (userId: string) => {
+    const { data: membership, error: membershipError } = await supabase
+      .from('group_members')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle()
+
+    if (membershipError) throw membershipError
+    if (!membership?.group_id) return null
+
+    const { data: group, error: groupError } = await supabase
+      .from('groups')
+      .select('*')
+      .eq('id', membership.group_id)
+      .single()
+
+    if (groupError) throw groupError
+
+    return { membership, group } // ← group y membership, no groupData/membershipData
+  }
+
   useEffect(() => {
     let active = true
 
-    // Si ya tenemos datos persistidos, no empezar desde cero
-    // pero sí verificar que la sesión siga válida
     const init = async () => {
       try {
-        // Si no hay auth ready, marcar que estamos verificando
-        if (!isAuthReady) {
-          setIsAuthReady(false)
-        }
+        if (!isAuthReady) setLoading('auth', true)
 
-        const { data, error } = await supabase.auth.getSession()
+        const { data } = await supabase.auth.getSession()
         const session = data?.session
         const currentUser = session?.user ?? null
 
         if (!active) return
 
         if (!currentUser) {
-          // No hay sesión activa
           reset()
           return
         }
 
-        // Hay sesión: verificar si cambió el usuario
-        if (currentUser.id !== user?.id) {
-          // Usuario diferente, resetear y cargar todo
+        // Solo actualizar si cambió el usuario
+        const userChanged = currentUser.id !== user?.id
+        
+        if (userChanged) {
           setUser(currentUser)
-          setRole(null)
-          setProfile(null)
-        }
+          setLoading('profile', true)
+          if (loadGroup) setLoading('group', true)
 
-        setIsAuthReady(true)
-
-        // Cargar perfil solo si no lo tenemos o cambió el user
-        if (!profile || currentUser.id !== user?.id) {
-          setIsProfileLoading(true)
           try {
+            // Cargar perfil
             const profileData = await loadProfile(currentUser.id)
             if (!active) return
-
+            
             setProfile(profileData)
             setRole(profileData?.role || null)
+            setLoading('profile', false)
+
+            // Cargar grupo si se pidió
+            if (loadGroup) {
+              const groupResult = await loadGroupData(currentUser.id)
+              if (!active) return
+              setGroupData(groupResult)
+              
+              setGroupData(groupResult)
+              setLoading('group', false)
+            }
+
           } catch (err) {
-            console.error('Error cargando perfil:', err)
-            setProfile(null)
-            setRole(null)
-          } finally {
-            if (active) setIsProfileLoading(false)
+            console.error('Error cargando datos:', err)
+            setLoading('profile', false)
+            setLoading('group', false)
           }
         }
 
+        setLoading('auth', false)
+
       } catch (err) {
         console.error('INIT ERROR:', err)
-        setIsAuthReady(true)
+        setLoading('auth', false)
       }
     }
 
@@ -103,23 +126,28 @@ export function useUser() {
           return
         }
 
-        // Solo actualizar si cambió
         if (currentUser.id !== user?.id) {
           setUser(currentUser)
-          setIsAuthReady(true)
-          setIsProfileLoading(true)
+          setLoading('profile', true)
+          if (loadGroup) setLoading('group', true)
 
           try {
             const profileData = await loadProfile(currentUser.id)
             if (!active) return
-
             setProfile(profileData)
             setRole(profileData?.role || null)
+
+            if (loadGroup) {
+              const groupResult = await loadGroupData(currentUser.id)
+              if (!active) return
+              setGroupData(groupResult)
+            }
+
           } catch (err) {
-            setProfile(null)
-            setRole(null)
+            console.error('Error:', err)
           } finally {
-            if (active) setIsProfileLoading(false)
+            setLoading('profile', false)
+            setLoading('group', false)
           }
         }
       }
@@ -129,19 +157,39 @@ export function useUser() {
       active = false
       subscription.unsubscribe()
     }
-  }, [user?.id]) // ← dependencia clave: solo re-ejecutar si cambia el user
+  }, [user?.id, loadGroup])
 
   const refresh = useCallback(() => {
-    setIsAuthReady(false)
-  }, [setIsAuthReady])
+    setLoading('auth', false) // Fuerza re-carga
+  }, [])
+
+  const refreshGroup = useCallback(async () => {
+    if (!user?.id) return
+    setLoading('group', true)
+    const result = await loadGroupData(user.id)
+    setGroupData(result)
+    setLoading('group', false)
+  }, [user?.id])
 
   return {
+    // Auth
     user,
+    isAuthReady,
+    
+    // Perfil
     profile,
     role,
-    isAuthReady,
     isProfileLoading,
-    error: null, // manejar si lo necesitas
+    
+    // Grupo (null si no se cargó)
+    group,
+    groupId,
+    membership,
+    isGroupLoading,
+    isGroupAdmin: membership?.role === 'group_admin',
+    
+    // Actions
     refresh,
+    refreshGroup,
   }
 }
