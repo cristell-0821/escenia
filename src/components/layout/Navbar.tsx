@@ -89,7 +89,7 @@ export default function Navbar() {
             )
           })}
 
-          {/* PANEL - CORREGIDO: usa showPanel en vez de !loading */}
+          {/* PANEL */}
           {showPanel && panelLink && (
             <Link
               href={panelLink}
@@ -185,7 +185,7 @@ export default function Navbar() {
                 )
               })}
 
-              {/* PANEL MOBILE - CORREGIDO: usa showPanel */}
+              {/* PANEL MOBILE */}
               {showPanel && panelLink && (
                 <Link
                   href={panelLink}

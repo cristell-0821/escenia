@@ -3,7 +3,7 @@ import { Geist, Geist_Mono, Newsreader } from "next/font/google";
 import "./globals.css";
 
 import { Providers } from '@/components/providers/Providers'
-import NavbarWrapper from "@/components/layout/NavbarWrapper"; // ✅ Cambiado
+import NavbarWrapper from "@/components/layout/NavbarWrapper";
 import Footer from "@/components/layout/Footer";
 import { Toaster } from 'sonner'
 
