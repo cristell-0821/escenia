@@ -1,3 +1,4 @@
+// middleware.ts
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import type { Database } from '@/types/database.types'
@@ -26,48 +27,41 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // Refresca la sesión — no remover esto
   const { data: { user } } = await supabase.auth.getUser()
-
   const pathname = request.nextUrl.pathname
 
-  // ── Rutas protegidas ────────────────────────────────────
-  const requiresAuth = pathname.startsWith('/dashboard')
-  const requiresSuperAdmin = pathname.startsWith('/admin')
-  const requiresGroupAdmin = pathname.startsWith('/dashboard/mi-agrupacion')
+  const isSuperAdminRoute = pathname.startsWith('/admin')
+  const isGroupAdminRoute = pathname.startsWith('/dashboard/mi-agrupacion')
+  const isDashboardRoute = pathname.startsWith('/dashboard')
+  const requiresAuth = isDashboardRoute || isSuperAdminRoute
 
-  // ── Sin autenticación → redirige a login ────────────────
-  if ((requiresAuth || requiresSuperAdmin) && !user) {
+  // Sin autenticación → login
+  if (requiresAuth && !user) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     url.searchParams.set('redirectTo', pathname)
     return NextResponse.redirect(url)
   }
 
-  // ── Verificar rol superadmin ─────────────────────────────
-  if (requiresSuperAdmin) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user!.id)
-      .single()
+  if (!user) return supabaseResponse
 
-    if (profile?.role !== 'superadmin') {
-      return NextResponse.redirect(new URL('/', request.url))
-    }
+  // Obtener rol
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  const userRole = profile?.role
+
+  // Superadmin routes
+  if (isSuperAdminRoute && userRole !== 'superadmin') {
+    return NextResponse.redirect(new URL('/', request.url))
   }
 
-  // ── Verificar rol group_admin ────────────────────────────
-  if (requiresGroupAdmin && user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (profile?.role !== 'group_admin') {
-      return NextResponse.redirect(new URL('/', request.url))
-    }
+  // ✅ CORREGIDO: Permitir tanto group_admin COMO superadmin
+  if (isGroupAdminRoute && userRole !== 'group_admin' && userRole !== 'superadmin') {
+    return NextResponse.redirect(new URL('/', request.url))
   }
 
   return supabaseResponse
@@ -75,7 +69,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Excluye archivos estáticos y rutas de Next.js internos
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

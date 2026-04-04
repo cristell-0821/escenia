@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useUser } from '@/hooks/useUser'
 import RegistrationBanner from './RegistrationBanner'
-import { CircleCheckBig, Eye, Loader2 } from "lucide-react"
+import { CircleCheckBig, Eye, Loader2, LogOut } from "lucide-react"
+import { supabase } from '@/lib/supabase/client'
 
 export default function PerfilClient() {
   const searchParams = useSearchParams()
@@ -15,6 +16,7 @@ export default function PerfilClient() {
   
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
+  const [loggingOut, setLoggingOut] = useState(false)
 
   useEffect(() => {
     if (user) {
@@ -23,6 +25,16 @@ export default function PerfilClient() {
     }
   }, [user])
 
+  const handleLogout = async () => {
+    setLoggingOut(true)
+    const { error } = await supabase.auth.signOut()
+    if (!error) {
+      router.push('/login')
+    } else {
+      console.error('Error al cerrar sesión:', error)
+      setLoggingOut(false)
+    }
+  }
    // 1. Esperar a que auth esté listo
    if (!isAuthReady) {
     return (
@@ -103,25 +115,6 @@ export default function PerfilClient() {
                 />
               </div>
 
-              <div className="group relative">
-                <label className="block text-xs font-bold tracking-widest text-[#554240] uppercase mb-2" htmlFor="password">
-                  Contraseña
-                </label>
-                <input
-                  id="password"
-                  type="password"
-                  value="********"
-                  disabled
-                  className="w-full bg-transparent border-0 border-b border-[#dbc1bd] py-3 px-0 text-xl font-serif focus:ring-0 transition-all outline-none"
-                />
-                <button 
-                  type="button"
-                  className="absolute right-0 bottom-3 text-[#554240] hover:text-[#85332a] transition-colors"
-                >
-                  <Eye className="text-[#554240] w-5 h-5" />
-                </button>
-              </div>
-
               <div className="pt-6">
                 <button
                   type="button"
@@ -132,6 +125,36 @@ export default function PerfilClient() {
               </div>
 
             </form>
+          </div>
+          {/* SEGURIDAD - CERRAR SESIÓN */}
+          <div className="space-y-12 pt-8 border-t border-[#dbc1bd]/20">
+            <h3 className="font-serif text-3xl text-[#85332a] border-b border-[#dbc1bd]/10 pb-4">
+              Seguridad
+            </h3>
+            
+            <div className="space-y-6">
+              <p className="text-[#554240] text-sm">
+                Cierra tu sesión actual en todos los dispositivos. Deberás volver a ingresar tus credenciales para acceder.
+              </p>
+              
+              <button
+                onClick={handleLogout}
+                disabled={loggingOut}
+                className="flex items-center gap-3 bg-transparent border border-[#85332a] text-[#85332a] px-8 py-4 font-bold tracking-widest uppercase text-sm hover:bg-[#85332a] hover:text-white transition-all active:scale-95 disabled:opacity-50"
+              >
+                {loggingOut ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Cerrando sesión...
+                  </>
+                ) : (
+                  <>
+                    <LogOut className="w-4 h-4" />
+                    Cerrar Sesión
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </section>
       

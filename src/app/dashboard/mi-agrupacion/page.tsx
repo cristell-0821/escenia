@@ -1,25 +1,22 @@
 // src/app/dashboard/mi-agrupacion/page.tsx
-
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import MiAgrupacionContent from './MiAgrupacionContent'
+import MiAgrupacionWrapper from './MiAgrupacionWrapper'
 
 export default async function MiAgrupacionPage() {
   const supabase = await createClient()
 
-  // 🔐 Usuario
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
     redirect('/login')
   }
 
-  // 👤 Perfil
   const { data: membership } = await supabase
-  .from('group_members')
-  .select('group_id, role')
-  .eq('user_id', user.id)
-  .single()
+    .from('group_members')
+    .select('group_id, role')
+    .eq('user_id', user.id)
+    .single()
 
   if (!membership?.group_id) {
     return <div>No tienes agrupación asignada</div>
@@ -39,5 +36,5 @@ export default async function MiAgrupacionPage() {
     )
   }
 
-  return <MiAgrupacionContent group={group} />
+  return <MiAgrupacionWrapper group={group} />
 }

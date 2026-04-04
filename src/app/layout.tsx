@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Newsreader } from "next/font/google";
 import "./globals.css";
 
-import Navbar from "@/components/layout/Navbar";
+import { Providers } from '@/components/providers/Providers'
+import NavbarWrapper from "@/components/layout/NavbarWrapper"; // ✅ Cambiado
 import Footer from "@/components/layout/Footer";
 import { Toaster } from 'sonner'
 
@@ -38,15 +39,16 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${newsreader.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-[#FAF3E7]">
-        <Navbar />
+        <Providers>
+        <NavbarWrapper />
 
-        {/* CONTENIDO */}
         <main className="flex-1 w-full">
           {children}
           <Toaster position="top-center" richColors />
         </main>
 
         <Footer />
+        </Providers>
       </body>
     </html>
   );

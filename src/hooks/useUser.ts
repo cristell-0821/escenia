@@ -1,13 +1,14 @@
+// hooks/useUser.ts
 'use client'
 
 import { useEffect, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { useUserStore } from '@/stores/userStore'
+import { createClient } from '@/lib/supabase/client'
 
 const supabase = createClient()
 
 interface UseUserOptions {
-  loadGroup?: boolean // ← nuevo: cargar grupo o no
+  loadGroup?: boolean
 }
 
 export function useUser(options: UseUserOptions = {}) {
@@ -16,101 +17,77 @@ export function useUser(options: UseUserOptions = {}) {
   const {
     user, profile, role, group, groupId, membership,
     isAuthReady, isProfileLoading, isGroupLoading,
-    setUser, setProfile, setRole, setGroupData, setLoading, reset, resetGroup,
   } = useUserStore()
 
-  // Cargar perfil
-  const loadProfile = async (userId: string) => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .maybeSingle()
+  const setUser = useUserStore((state) => state.setUser)
+  const setProfile = useUserStore((state) => state.setProfile)
+  const setRole = useUserStore((state) => state.setRole)
+  const setGroupData = useUserStore((state) => state.setGroupData)
+  const setLoading = useUserStore((state) => state.setLoading)
+  const reset = useUserStore((state) => state.reset)
 
+  const loadProfile = useCallback(async (userId: string) => {
+    const { data, error } = await supabase
+      .from('profiles').select('*').eq('id', userId).maybeSingle()
     if (error) throw error
     return data
-  }
+  }, [])
 
-  // En loadGroupData, cambia los nombres al retornar:
-  const loadGroupData = async (userId: string) => {
-    const { data: membership, error: membershipError } = await supabase
-      .from('group_members')
-      .select('*')
-      .eq('user_id', userId)
-      .maybeSingle()
+  const loadGroupData = useCallback(async (userId: string) => {
+    const { data: membershipData } = await supabase
+      .from('group_members').select('*').eq('user_id', userId).maybeSingle()
+    if (!membershipData?.group_id) return null
 
-    if (membershipError) throw membershipError
-    if (!membership?.group_id) return null
+    const { data: groupData } = await supabase
+      .from('groups').select('*').eq('id', membershipData.group_id).single()
 
-    const { data: group, error: groupError } = await supabase
-      .from('groups')
-      .select('*')
-      .eq('id', membership.group_id)
-      .single()
-
-    if (groupError) throw groupError
-
-    return { membership, group } // ← group y membership, no groupData/membershipData
-  }
+    return { membership: membershipData, group: groupData }
+  }, [])
 
   useEffect(() => {
     let active = true
 
     const init = async () => {
-      try {
-        if (!isAuthReady) setLoading('auth', true)
+      // ✅ CORREGIDO: Verificar que tengamos user Y role
+      if (isAuthReady && user && role) return
+      
+      setLoading('auth', true)
+      const { data } = await supabase.auth.getSession()
+      const currentUser = data?.session?.user ?? null
 
-        const { data } = await supabase.auth.getSession()
-        const session = data?.session
-        const currentUser = session?.user ?? null
+      if (!active) return
+      if (!currentUser) { reset(); setLoading('auth', false); return }
 
-        if (!active) return
+      // Si cambió el usuario o no tenemos perfil, cargar todo
+      const needsProfile = currentUser.id !== user?.id || !profile
+      
+      if (needsProfile) {
+        setUser(currentUser)
+        setLoading('profile', true)
+        if (loadGroup) setLoading('group', true)
 
-        if (!currentUser) {
-          reset()
-          return
-        }
+        try {
+          const profileData = await loadProfile(currentUser.id)
+          if (!active) return
+          
+          setProfile(profileData)
+          setRole(profileData?.role || null)
+          setLoading('profile', false)
 
-        // Solo actualizar si cambió el usuario
-        const userChanged = currentUser.id !== user?.id
-        
-        if (userChanged) {
-          setUser(currentUser)
-          setLoading('profile', true)
-          if (loadGroup) setLoading('group', true)
-
-          try {
-            // Cargar perfil
-            const profileData = await loadProfile(currentUser.id)
+          if (loadGroup) {
+            const groupResult = await loadGroupData(currentUser.id)
             if (!active) return
-            
-            setProfile(profileData)
-            setRole(profileData?.role || null)
-            setLoading('profile', false)
-
-            // Cargar grupo si se pidió
-            if (loadGroup) {
-              const groupResult = await loadGroupData(currentUser.id)
-              if (!active) return
-              setGroupData(groupResult)
-              
-              setGroupData(groupResult)
-              setLoading('group', false)
-            }
-
-          } catch (err) {
-            console.error('Error cargando datos:', err)
-            setLoading('profile', false)
+            setGroupData(groupResult)
             setLoading('group', false)
           }
+        } catch (err) {
+          console.error('Error loading profile:', err)
+          setLoading('profile', false)
+          setLoading('group', false)
         }
-
-        setLoading('auth', false)
-
-      } catch (err) {
-        console.error('INIT ERROR:', err)
-        setLoading('auth', false)
       }
+      
+      setLoading('auth', false)
     }
 
     init()
@@ -118,14 +95,9 @@ export function useUser(options: UseUserOptions = {}) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         if (!active) return
-
         const currentUser = session?.user ?? null
-
-        if (!currentUser) {
-          reset()
-          return
-        }
-
+        if (!currentUser) { reset(); return }
+        
         if (currentUser.id !== user?.id) {
           setUser(currentUser)
           setLoading('profile', true)
@@ -133,16 +105,13 @@ export function useUser(options: UseUserOptions = {}) {
 
           try {
             const profileData = await loadProfile(currentUser.id)
-            if (!active) return
             setProfile(profileData)
             setRole(profileData?.role || null)
 
             if (loadGroup) {
               const groupResult = await loadGroupData(currentUser.id)
-              if (!active) return
               setGroupData(groupResult)
             }
-
           } catch (err) {
             console.error('Error:', err)
           } finally {
@@ -153,14 +122,12 @@ export function useUser(options: UseUserOptions = {}) {
       }
     )
 
-    return () => {
-      active = false
-      subscription.unsubscribe()
-    }
-  }, [user?.id, loadGroup])
+    return () => { active = false; subscription.unsubscribe() }
+  }, [user?.id, loadGroup, isAuthReady, role, profile]) // ✅ Agregué role y profile a deps
 
   const refresh = useCallback(() => {
-    setLoading('auth', false) // Fuerza re-carga
+    setLoading('auth', true)
+    setLoading('auth', false)
   }, [])
 
   const refreshGroup = useCallback(async () => {
@@ -172,24 +139,10 @@ export function useUser(options: UseUserOptions = {}) {
   }, [user?.id])
 
   return {
-    // Auth
-    user,
-    isAuthReady,
-    
-    // Perfil
-    profile,
-    role,
-    isProfileLoading,
-    
-    // Grupo (null si no se cargó)
-    group,
-    groupId,
-    membership,
-    isGroupLoading,
+    user, isAuthReady, profile, role, isProfileLoading,
+    group, groupId, membership, isGroupLoading,
     isGroupAdmin: membership?.role === 'group_admin',
-    
-    // Actions
-    refresh,
-    refreshGroup,
+    showPanel: isAuthReady && !isProfileLoading && !!role,
+    refresh, refreshGroup,
   }
 }

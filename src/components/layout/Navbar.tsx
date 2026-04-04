@@ -16,6 +16,13 @@ export default function Navbar() {
   const pathname = usePathname()
   const router = useRouter()
   const { user, role, isAuthReady, isProfileLoading } = useUser()
+  console.log('🔍 DEBUG NAVBAR:', {
+  user: user?.id,
+  role,
+  isAuthReady,
+  isProfileLoading,
+  showPanel: isAuthReady && !isProfileLoading && role
+})
   const showPanel = isAuthReady && !isProfileLoading && role
   const [open, setOpen] = useState(false)
 
