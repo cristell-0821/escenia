@@ -160,9 +160,9 @@ export function BotonInscripcion({
       if (result.registration) {
         setRegistration({
           id: result.registration.id,
-          status: result.registration.status,
-          createdAt: result.registration.created_at,
-          notes: result.registration.notes
+          status: (result.registration.status ?? 'pending') as 'pending' | 'approved' | 'rejected',
+          createdAt: result.registration.created_at!,
+          notes: result.registration.notes ?? undefined
         })
       }
     }
