@@ -16,9 +16,7 @@ import Link from 'next/link'
 
 export default async function SolicitudesPage({
   searchParams
-}: {
-  searchParams: { [key: string]: string | string[] | undefined }
-}) {
+}: any) {
   const supabase = await createClient()
   const success = searchParams?.success
 
