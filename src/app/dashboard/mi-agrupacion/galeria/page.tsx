@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import GaleriaClient from './GaleriaClient'
 
+export const dynamic = "force-dynamic"
+
 export default async function Page() {
   const supabase = await createClient()
 
