@@ -1,5 +1,5 @@
-import RegistroForm from "./RegisterForm"
+import RegistroWrapper from './RegistroWrapper'
 
 export default function RegistroPage() {
-  return <RegistroForm />
+  return <RegistroWrapper />
 }

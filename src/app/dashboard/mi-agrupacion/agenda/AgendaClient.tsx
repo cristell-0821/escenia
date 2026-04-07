@@ -36,7 +36,7 @@ export default function AgendaClient({
   initialEvents: any[]
   groupId: string
 }) {
-  const [supabase] = useState(() => createClient())
+  const supabase = createClient() 
 
   const [loading] = useState(false)
   const [saving, setSaving] = useState(false)

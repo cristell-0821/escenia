@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 
 export default function RegistroForm() {
-  const [supabase] = useState(() => createClient())
+  const supabase = createClient()
   const router = useRouter();
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')

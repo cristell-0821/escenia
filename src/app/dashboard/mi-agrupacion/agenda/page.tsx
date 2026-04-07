@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import AgendaClient from './AgendaClient'
+import AgendaWrapper from './AgendaWrapper'
 
 export default async function AgendaPage() {
   const supabase = await createClient()
@@ -30,7 +30,7 @@ export default async function AgendaPage() {
     .order('event_date', { ascending: true })
 
   return (
-    <AgendaClient 
+    <AgendaWrapper 
       initialEvents={events || []}
       groupId={groupId}
     />
