@@ -10,14 +10,12 @@ export default function LoginForm() {
   const [supabase] = useState(() => createClient());
   const router = useRouter();
   
-  // ... resto de tus estados
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Estados para recuperación...
   const [isRecovering, setIsRecovering] = useState(false);
   const [recoveryEmail, setRecoveryEmail] = useState("");
   const [recoverySent, setRecoverySent] = useState(false);
@@ -76,10 +74,10 @@ export default function LoginForm() {
       <main className="min-h-screen flex flex-col md:flex-row">
         {/* LEFT IMAGE */}
         <section className="hidden md:flex w-1/2 bg-[#e8e2d6] relative overflow-hidden items-center justify-center p-20">
-          <div className="absolute inset-0 opacity-20 bg-[url('/img/home/hero_fondo.png')]"></div>
+          <div className="absolute inset-0 opacity-20 bg-[url('/img/add/login.jpg')]"></div>
           <div className="relative z-10 w-full h-full border border-[#dbc1bd]/20 p-4 flex flex-col">
             <img
-              src="/img/home/editorial.webp"
+              src="/img/add/login_image.jpg"
               className="w-full h-full object-cover grayscale-[30%] contrast-[110%]"
             />
             <div className="absolute bottom-12 left-12 right-12 text-white">
@@ -177,11 +175,11 @@ export default function LoginForm() {
     <main className="min-h-screen flex flex-col md:flex-row">
       {/* LEFT IMAGE */}
       <section className="hidden md:flex w-1/2 bg-[#e8e2d6] relative overflow-hidden items-center justify-center p-20">
-        <div className="absolute inset-0 opacity-20 bg-[url('/img/home/hero_fondo.png')]"></div>
+        <div className="absolute inset-0 opacity-20 bg-[url('/img/add/login_image.jpg')]"></div>
 
         <div className="relative z-10 w-full h-full border border-[#dbc1bd]/20 p-4 flex flex-col">
           <img
-            src="/img/home/editorial.webp"
+            src="/img/add/login.jpg"
             className="w-full h-full object-cover grayscale-[30%] contrast-[110%]"
           />
 

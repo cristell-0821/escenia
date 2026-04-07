@@ -26,6 +26,12 @@ export default function PerfilClient() {
     }
   }, [user])
 
+  useEffect(() => {
+    if (isAuthReady && !user) {
+      router.push('/login')
+    }
+  }, [isAuthReady, user, router])
+
   const handleLogout = async () => {
     setLoggingOut(true)
     const { error } = await supabase.auth.signOut()
@@ -36,8 +42,9 @@ export default function PerfilClient() {
       setLoggingOut(false)
     }
   }
+
    // 1. Esperar a que auth esté listo
-   if (!isAuthReady) {
+  if (!isAuthReady) {
     return (
       <div className="min-h-[calc(100vh-64px)] bg-[#fff8ef] flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-[#85332a]" />
@@ -45,9 +52,8 @@ export default function PerfilClient() {
     )
   }
 
-   // 2. Si auth está listo pero no hay user → redirigir a login
+  // 2. Si auth está listo pero no hay user → mostrar loader (la redirección ya está en el useEffect)
   if (!user) {
-    router.push('/login')
     return (
       <div className="min-h-[calc(100vh-64px)] bg-[#fff8ef] flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-[#85332a]" />
@@ -98,6 +104,7 @@ export default function PerfilClient() {
                   id="name"
                   type="text"
                   value={name}
+                  disabled
                   onChange={(e) => setName(e.target.value)}
                   className="w-full bg-transparent border-0 border-b border-[#dbc1bd] py-3 px-0 text-xl font-serif focus:ring-0 transition-all focus:border-[#85332a] outline-none"
                 />

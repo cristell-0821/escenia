@@ -51,16 +51,16 @@ export default function RegistroForm() {
     <main className="min-h-screen flex flex-col md:flex-row pt-20">
       {/* LEFT IMAGES */}
       <section className="hidden md:flex md:w-1/2 relative bg-[#eee7db] overflow-hidden items-center justify-center p-12">
-        <div className="absolute inset-0 opacity-30 bg-[url('/img/home/hero_fondo.png')]"></div>
+        <div className="absolute inset-0 opacity-30 bg-[url('/img/add/login.jpg')]"></div>
 
         <div className="relative z-10 w-full h-full flex flex-col">
           <div className="relative flex-1">
             <img
-              src="/img/home/hero_fondo.png"
+              src="/img/add/login.jpg"
               className="absolute top-0 right-0 w-3/4 h-2/3 object-cover shadow-2xl grayscale hover:grayscale-0 transition"
             />
             <img
-              src="/img/home/editorial.webp"
+              src="/img/add/login_image.jpg"
               className="absolute bottom-0 left-0 w-3/4 h-1/2 object-cover shadow-2xl z-20"
             />
           </div>
