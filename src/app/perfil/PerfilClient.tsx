@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { useUser } from '@/hooks/useUser'
 import RegistrationBanner from './RegistrationBanner'
 import { CircleCheckBig, Eye, Loader2, LogOut } from "lucide-react"
-import { supabase } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/client'
 
 export default function PerfilClient() {
   const searchParams = useSearchParams()
@@ -13,6 +13,7 @@ export default function PerfilClient() {
   const successMessage = searchParams.get('success')
   
   const { user, profile, isAuthReady, isProfileLoading } = useUser()
+  const supabase = createClient()
   
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')

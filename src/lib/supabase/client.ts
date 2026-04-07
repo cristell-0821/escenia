@@ -17,6 +17,3 @@ export function createClient() {
   
   return browserClient
 }
-
-// Export para usar directo en 'use client' components
-export const supabase = createClient()

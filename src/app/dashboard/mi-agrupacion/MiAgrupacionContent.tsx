@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { supabase } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/client'
 import { updateGroup } from './actions'
 import { useRouter } from 'next/navigation'
 import { 
@@ -41,6 +41,7 @@ const weavePattern = {
 
 export default function MiAgrupacionContent({ group }: Props) {
   const router = useRouter()
+  const supabase = createClient()
 
   const groupId = group?.id
 

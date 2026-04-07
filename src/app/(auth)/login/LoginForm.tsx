@@ -1,22 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Loader2, ArrowLeft } from "lucide-react";
 
 export default function LoginForm() {
-  const supabase = createClient();
+  // ✅ Inicializa el cliente de forma lazy o dentro de useEffect
+  const [supabase] = useState(() => createClient());
   const router = useRouter();
   
-  // Estados del formulario de login
+  // ... resto de tus estados
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Estados para recuperación de contraseña
+  // Estados para recuperación...
   const [isRecovering, setIsRecovering] = useState(false);
   const [recoveryEmail, setRecoveryEmail] = useState("");
   const [recoverySent, setRecoverySent] = useState(false);
@@ -27,19 +28,23 @@ export default function LoginForm() {
     setLoading(true);
     setError("");
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    setLoading(false);
+      if (error) {
+        setError(error.message);
+        return;
+      }
 
-    if (error) {
-      setError(error.message);
-      return;
+      router.push("/");
+    } catch (err) {
+      setError("Error al iniciar sesión");
+    } finally {
+      setLoading(false);
     }
-
-    router.push("/");
   };
 
   const handleRecovery = async (e: React.FormEvent) => {
@@ -47,18 +52,22 @@ export default function LoginForm() {
     setRecoveryLoading(true);
     setError("");
 
-    const { error } = await supabase.auth.resetPasswordForEmail(recoveryEmail, {
-      redirectTo: `${window.location.origin}/recuperar-contrasena`,
-    });
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(recoveryEmail, {
+        redirectTo: `${window.location.origin}/recuperar-contrasena`,
+      });
 
-    setRecoveryLoading(false);
+      if (error) {
+        setError(error.message);
+        return;
+      }
 
-    if (error) {
-      setError(error.message);
-      return;
+      setRecoverySent(true);
+    } catch (err) {
+      setError("Error al enviar el correo");
+    } finally {
+      setRecoveryLoading(false);
     }
-
-    setRecoverySent(true);
   };
 
   // Vista de recuperación de contraseña
