@@ -106,7 +106,7 @@ export default function GaleriaClient({
   initialGallery: any[]
   groupId: string
 }) {
-  const [supabase] = useState(() => createClient())
+  const supabase = createClient()
 
   const [gallery, setGallery] = useState(initialGallery)
   const [uploading, setUploading] = useState(false)
