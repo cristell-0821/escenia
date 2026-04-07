@@ -1,13 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import dynamicImport from 'next/dynamic'  // ✅ Cambia el nombre aquí
+import GaleriaWrapper from './GaleriaWrapper'
 
 export const dynamic = "force-dynamic"
-
-const GaleriaClient = dynamicImport(
-  () => import('./GaleriaClient'),
-  { ssr: false }
-)
 
 export default async function Page() {
   const supabase = await createClient()
@@ -34,7 +29,7 @@ export default async function Page() {
     .order('sort_order', { ascending: true })
 
   return (
-    <GaleriaClient 
+    <GaleriaWrapper 
       initialGallery={gallery || []}
       groupId={membership.group_id}
     />
