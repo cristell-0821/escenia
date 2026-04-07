@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Loader2, CheckCircle } from "lucide-react";
 
 export default function RecuperarContrasenaPage() {
-  const supabase = createClient();
+  const [supabase] = useState(() => createClient())
   const router = useRouter();
   
   const [password, setPassword] = useState("");

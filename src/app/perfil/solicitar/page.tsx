@@ -21,7 +21,7 @@ export default function SolicitarAgrupacionPage() {
 
   useEffect(() => {
     const getUser = async () => {
-      const supabase = createClient()
+      const [supabase] = useState(() => createClient())
       const { data } = await supabase.auth.getUser()
       if (data.user) {
         setUserId(data.user.id)

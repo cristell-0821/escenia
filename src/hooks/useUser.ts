@@ -1,11 +1,9 @@
 // hooks/useUser.ts
 'use client'
 
-import { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, useState } from 'react'
 import { useUserStore } from '@/stores/userStore'
 import { createClient } from '@/lib/supabase/client'
-
-const supabase = createClient()
 
 interface UseUserOptions {
   loadGroup?: boolean
@@ -13,7 +11,8 @@ interface UseUserOptions {
 
 export function useUser(options: UseUserOptions = {}) {
   const { loadGroup = false } = options
-  
+  const [supabase] = useState(() => createClient())
+
   const {
     user, profile, role, group, groupId, membership,
     isAuthReady, isProfileLoading, isGroupLoading,

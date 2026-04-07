@@ -41,7 +41,7 @@ const weavePattern = {
 
 export default function MiAgrupacionContent({ group }: Props) {
   const router = useRouter()
-  const supabase = createClient()
+  const [supabase] = useState(() => createClient())
 
   const groupId = group?.id
 

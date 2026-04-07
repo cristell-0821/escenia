@@ -13,7 +13,7 @@ export default function PerfilClient() {
   const successMessage = searchParams.get('success')
   
   const { user, profile, isAuthReady, isProfileLoading } = useUser()
-  const supabase = createClient()
+  const [supabase] = useState(() => createClient())
   
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
